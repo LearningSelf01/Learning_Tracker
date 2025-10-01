@@ -58,9 +58,24 @@ class AppDrawer extends StatelessWidget {
               onTap: () => context.go(AppRoute.routing),
             ),
             _DrawerTile(
-              icon: Icons.task_alt_rounded,
-              label: 'Tasks',
+              icon: Icons.checklist_rounded,
+              label: 'To-do',
               onTap: () => context.go(AppRoute.tasks),
+            ),
+            _DrawerTile(
+              icon: Icons.how_to_reg_rounded,
+              label: 'Attendance Tracker',
+              onTap: () => context.go(AppRoute.tracker),
+            ),
+            _DrawerTile(
+              icon: Icons.description_rounded,
+              label: 'CV Maker',
+              onTap: () => context.go(AppRoute.cvMaker),
+            ),
+            _DrawerTile(
+              icon: Icons.workspace_premium_rounded,
+              label: 'Skills',
+              onTap: () => context.go(AppRoute.skills),
             ),
             const Spacer(),
             const Divider(height: 0),

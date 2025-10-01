@@ -12,6 +12,10 @@ import 'features/pages/community_page.dart';
 import 'features/pages/contacts_page.dart';
 import 'features/pages/tracker_page.dart';
 import 'features/pages/routing_page.dart';
+import 'features/pages/sign_in_page.dart';
+import 'features/pages/sign_up_page.dart';
+import 'features/pages/cv_maker_page.dart';
+import 'features/pages/skills_page.dart';
 
 // Route names
 class AppRoute {
@@ -24,6 +28,10 @@ class AppRoute {
   static const contacts = '/contacts';
   static const tracker = '/tracker';
   static const routing = '/routing';
+  static const signIn = '/sign-in';
+  static const signUp = '/sign-up';
+  static const cvMaker = '/cv-maker';
+  static const skills = '/skills';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -64,6 +72,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => const NoTransitionPage(child: TasksPage()),
           ),
           GoRoute(
+            path: AppRoute.cvMaker,
+            name: 'cv-maker',
+            pageBuilder: (context, state) => const NoTransitionPage(child: CvMakerPage()),
+          ),
+          GoRoute(
+            path: AppRoute.skills,
+            name: 'skills',
+            pageBuilder: (context, state) => const NoTransitionPage(child: SkillsPage()),
+          ),
+          GoRoute(
             path: AppRoute.routing,
             name: 'routing',
             pageBuilder: (context, state) => const NoTransitionPage(child: RoutingPage()),
@@ -77,6 +95,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoute.settings,
             name: 'settings',
             pageBuilder: (context, state) => const NoTransitionPage(child: SettingsPage()),
+          ),
+          GoRoute(
+            path: AppRoute.signIn,
+            name: 'sign-in',
+            pageBuilder: (context, state) => const NoTransitionPage(child: SignInPage()),
+          ),
+          GoRoute(
+            path: AppRoute.signUp,
+            name: 'sign-up',
+            pageBuilder: (context, state) => const NoTransitionPage(child: SignUpPage()),
           ),
         ],
       ),

@@ -19,7 +19,6 @@ class AppDrawer extends StatelessWidget {
               child: Row(
                 children: [
                   CircleAvatar(
-                    radius: 24,
                     backgroundColor: cs.primaryContainer,
                     child: Icon(Icons.school, color: cs.onPrimaryContainer),
                   ),
@@ -37,58 +36,21 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             const Divider(height: 0),
-            _DrawerTile(
-              icon: Icons.dashboard_customize_rounded,
-              label: 'Dashboard',
-              onTap: () => context.go(AppRoute.dashboard),
-            ),
-            _DrawerTile(
-              icon: Icons.menu_book_rounded,
-              label: 'Courses',
-              onTap: () => context.go(AppRoute.courses),
-            ),
-            _DrawerTile(
-              icon: Icons.event_rounded,
-              label: 'Calendar',
-              onTap: () => context.go(AppRoute.calendar),
-            ),
-            _DrawerTile(
-              icon: Icons.route,
-              label: 'Routing',
-              onTap: () => context.go(AppRoute.routing),
-            ),
-            _DrawerTile(
-              icon: Icons.checklist_rounded,
-              label: 'To-do',
-              onTap: () => context.go(AppRoute.tasks),
-            ),
-            _DrawerTile(
-              icon: Icons.how_to_reg_rounded,
-              label: 'Attendance Tracker',
-              onTap: () => context.go(AppRoute.tracker),
-            ),
-            _DrawerTile(
-              icon: Icons.description_rounded,
-              label: 'CV Maker',
-              onTap: () => context.go(AppRoute.cvMaker),
-            ),
-            _DrawerTile(
-              icon: Icons.workspace_premium_rounded,
-              label: 'Skills',
-              onTap: () => context.go(AppRoute.skills),
-            ),
+
+            _DrawerTile(icon: Icons.dashboard_customize_rounded, label: 'Dashboard', onTap: () => context.go(AppRoute.dashboard)),
+            _DrawerTile(icon: Icons.menu_book_rounded, label: 'Courses', onTap: () => context.go(AppRoute.courses)),
+            _DrawerTile(icon: Icons.event_rounded, label: 'Calendar', onTap: () => context.go(AppRoute.calendar)),
+            _DrawerTile(icon: Icons.route, label: 'Routine', onTap: () => context.go(AppRoute.routing)),
+            _DrawerTile(icon: Icons.how_to_reg_rounded, label: 'Attendance Tracker', onTap: () => context.go(AppRoute.tracker)),
+            _DrawerTile(icon: Icons.task_alt_rounded, label: 'Tasks', onTap: () => context.go(AppRoute.tasks)),
+            _DrawerTile(icon: Icons.checklist_rounded, label: 'To-do', onTap: () => context.go(AppRoute.tasks)),
+            _DrawerTile(icon: Icons.description_rounded, label: 'Pursuing', onTap: () => context.go(AppRoute.cvMaker)),
+            _DrawerTile(icon: Icons.workspace_premium_rounded, label: 'Skills', onTap: () => context.go(AppRoute.skills)),
+
             const Spacer(),
             const Divider(height: 0),
-            _DrawerTile(
-              icon: Icons.settings_rounded,
-              label: 'Settings',
-              onTap: () => context.go(AppRoute.settings),
-            ),
-            _DrawerTile(
-              icon: Icons.logout_rounded,
-              label: 'Sign out',
-              onTap: () => context.go(AppRoute.landing),
-            ),
+            _DrawerTile(icon: Icons.settings_rounded, label: 'Settings', onTap: () => context.go(AppRoute.settings)),
+            _DrawerTile(icon: Icons.logout_rounded, label: 'Sign out', onTap: () => context.go(AppRoute.landing)),
           ],
         ),
       ),

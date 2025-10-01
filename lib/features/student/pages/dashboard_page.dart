@@ -16,7 +16,7 @@ class DashboardPage extends StatelessWidget {
       children: [
         // Welcome Card
         _WelcomeCard(
-          userName: 'Alex',
+          userName: 'Dear',
           onTakeAssignment: () => context.go(AppRoute.tasks),
           onViewSchedule: () => context.go(AppRoute.calendar),
         ),

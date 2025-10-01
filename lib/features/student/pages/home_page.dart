@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app_router.dart';
-import 'widgets/app_drawer.dart';
+import '../../../app_router.dart';
+import '../widgets/app_drawer.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.child});
@@ -142,79 +142,8 @@ class _HomeShellState extends State<HomeShell> {
                 ),
               ),
             ),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: cs.outlineVariant, width: 0.5)),
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _TopNavChip(
-                    label: 'Dashboard',
-                    icon: Icons.dashboard_customize_rounded,
-                    route: AppRoute.dashboard,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'Courses',
-                    icon: Icons.menu_book_rounded,
-                    route: AppRoute.courses,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'Attendance Tracker',
-                    icon: Icons.how_to_reg_rounded,
-                    route: AppRoute.tracker,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'Calendar',
-                    icon: Icons.event_rounded,
-                    route: AppRoute.calendar,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'Routing',
-                    icon: Icons.route,
-                    route: AppRoute.routing,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'Task',
-                    icon: Icons.task_alt_rounded,
-                    route: AppRoute.tasks,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'To-do',
-                    icon: Icons.checklist_rounded,
-                    route: AppRoute.tasks,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'Skills',
-                    icon: Icons.workspace_premium_rounded,
-                    route: AppRoute.skills,
-                    location: location,
-                  ),
-                  _TopNavChip(
-                    label: 'CV Maker',
-                    icon: Icons.description_rounded,
-                    route: AppRoute.cvMaker,
-                    location: location,
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
+        ],
       ),
       drawer: isAuthRoute ? null : const AppDrawer(),
       body: SafeArea(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../app_router.dart';
+import '../../../app_router.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -121,7 +121,6 @@ class _SignUpPageState extends State<SignUpPage> {
                     final raw = (v ?? '').trim();
                     if (raw.isEmpty) return 'Phone is required';
                     final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
-                    // Accept E.164-like (+country then 10-15 digits) or local 10-12 digits
                     final isE164 = raw.startsWith('+') && digits.length >= 10 && digits.length <= 15;
                     final isLocal = !raw.startsWith('+') && digits.length >= 10 && digits.length <= 12;
                     if (!(isE164 || isLocal)) return 'Enter a valid phone (e.g., +911234567890 or 9876543210)';
@@ -142,7 +141,6 @@ class _SignUpPageState extends State<SignUpPage> {
                   validator: (v) {
                     final val = (v ?? '').trim();
                     if (val.isEmpty) return 'Email is required';
-                    // Simple but effective email pattern
                     final emailRe = RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
                     if (!emailRe.hasMatch(val)) return 'Enter a valid email';
                     return null;

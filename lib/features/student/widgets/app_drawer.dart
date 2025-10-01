@@ -84,6 +84,11 @@ class AppDrawer extends StatelessWidget {
               label: 'Settings',
               onTap: () => context.go(AppRoute.settings),
             ),
+            _DrawerTile(
+              icon: Icons.logout_rounded,
+              label: 'Sign out',
+              onTap: () => context.go(AppRoute.landing),
+            ),
           ],
         ),
       ),

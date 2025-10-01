@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../app_router.dart';
+import '../../../app_router.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -14,17 +14,13 @@ class DashboardPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset + kBottomNavigationBarHeight),
       children: [
-        
-
         // Welcome Card
         _WelcomeCard(
           userName: 'Alex',
           onTakeAssignment: () => context.go(AppRoute.tasks),
           onViewSchedule: () => context.go(AppRoute.calendar),
         ),
-
         const SizedBox(height: 12),
-
         // Quick stats grid
         LayoutBuilder(
           builder: (context, constraints) {
@@ -45,9 +41,7 @@ class DashboardPage extends StatelessWidget {
             );
           },
         ),
-
         const SizedBox(height: 8),
-
         // Schedule section
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,24 +75,22 @@ class DashboardPage extends StatelessWidget {
           statusLabel: 'Upcoming',
           statusColorKey: _StatusColorKey.neutral,
         ),
-
         const SizedBox(height: 8),
-
         // Quick actions
         Text('Quick Actions', style: text.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
         Text('Jump to your most used features', style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
         const SizedBox(height: 12),
-        const _QuickActionTile(
+        _QuickActionTile(
           icon: Icons.calendar_today,
           title: 'View Schedule',
           subtitle: "Today's Classes",
         ),
-        const _QuickActionTile(
+        _QuickActionTile(
           icon: Icons.flag,
           title: 'Track Goals',
           subtitle: 'Career Roadmap',
         ),
-        const _QuickActionTile(
+        _QuickActionTile(
           icon: Icons.show_chart,
           title: 'Study Analytics',
           subtitle: 'Progress Report',
@@ -108,7 +100,52 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-// Welcome card with soft gradient, large title, and actions
+class _QuickActionTile extends StatelessWidget {
+  const _QuickActionTile({required this.icon, required this.title, required this.subtitle});
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(color: cs.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.all(10),
+            child: Icon(icon, color: cs.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                Text(subtitle, style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+        ],
+      ),
+    );
+  }
+}
+
+  // Below are private UI widgets copied from the original student dashboard
 class _WelcomeCard extends StatelessWidget {
   const _WelcomeCard({required this.userName, required this.onTakeAssignment, required this.onViewSchedule});
   final String userName;
@@ -318,52 +355,6 @@ class _ScheduleCard extends StatelessWidget {
           const SizedBox(width: 12),
           // Time
           Text(time, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickActionTile extends StatelessWidget {
-  const _QuickActionTile({required this.icon, required this.title, required this.subtitle});
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(color: cs.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
-            padding: const EdgeInsets.all(10),
-            child: Icon(icon, color: cs.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: text.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
         ],
       ),
     );

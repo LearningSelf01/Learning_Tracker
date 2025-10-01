@@ -10,7 +10,6 @@ class TasksPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Header
         Row(
           children: [
             Icon(Icons.assignment, color: cs.primary),
@@ -19,8 +18,6 @@ class TasksPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-
-        // Filters
         Wrap(
           spacing: 8,
           children: const [
@@ -29,10 +26,7 @@ class TasksPage extends StatelessWidget {
             _FilterChip(label: 'Completed'),
           ],
         ),
-
         const SizedBox(height: 12),
-
-        // Task cards
         const _TaskCard(title: 'Math Assignment', subtitle: 'Problem Set 3', due: 'Today, 6 PM', status: _TaskStatus.due),
         const _TaskCard(title: 'Physics Lab Report', subtitle: 'Experiment 5', due: 'Tomorrow', status: _TaskStatus.upcoming),
         const _TaskCard(title: 'CS Project', subtitle: 'Implement Linked List', due: 'Fri', status: _TaskStatus.inProgress),
@@ -99,7 +93,7 @@ class _TaskCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Checkbox(
-            value: status == _TaskStatus.inProgress && false, // placeholder; you can wire state later
+            value: status == _TaskStatus.inProgress && false,
             onChanged: (_) {},
           ),
           const SizedBox(width: 8),

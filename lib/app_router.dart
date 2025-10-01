@@ -2,112 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'features/home/home_page.dart';
-import 'features/pages/dashboard_page.dart';
-import 'features/pages/courses_page.dart';
-import 'features/pages/calendar_page.dart';
-import 'features/pages/tasks_page.dart';
-import 'features/pages/settings_page.dart';
-import 'features/pages/community_page.dart';
-import 'features/pages/contacts_page.dart';
-import 'features/pages/tracker_page.dart';
-import 'features/pages/routing_page.dart';
-import 'features/pages/sign_in_page.dart';
-import 'features/pages/sign_up_page.dart';
-import 'features/pages/cv_maker_page.dart';
-import 'features/pages/skills_page.dart';
+import 'features/auth/landing_page.dart';
+import 'features/student/widgets/student_router.dart';
+import 'features/teacher/widgets/teacher_router.dart';
 
 // Route names
 class AppRoute {
-  static const dashboard = '/';
-  static const courses = '/courses';
-  static const calendar = '/calendar';
-  static const tasks = '/tasks';
-  static const settings = '/settings';
-  static const community = '/community';
-  static const contacts = '/contacts';
-  static const tracker = '/tracker';
-  static const routing = '/routing';
-  static const signIn = '/sign-in';
-  static const signUp = '/sign-up';
-  static const cvMaker = '/cv-maker';
-  static const skills = '/skills';
+  // Default landing
+  static const landing = '/';
+
+  // Student namespace
+  static const studentRoot = '/student';
+  static const dashboard = '/student';
+  static const courses = '/student/courses';
+  static const calendar = '/student/calendar';
+  static const tasks = '/student/tasks';
+  static const settings = '/student/settings';
+  static const community = '/student/community';
+  static const contacts = '/student/contacts';
+  static const tracker = '/student/tracker';
+  static const routing = '/student/routing';
+  static const signIn = '/student/sign-in';
+  static const signUp = '/student/sign-up';
+  static const cvMaker = '/student/cv-maker';
+  static const skills = '/student/skills';
+  // Teacher namespace
+  static const teacher = '/teacher';
+  static const teacherClasses = '/teacher/classes';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoute.dashboard,
+    initialLocation: AppRoute.landing,
     routes: [
-      ShellRoute(
-        builder: (context, state, child) => HomeShell(child: child),
-        routes: [
-          GoRoute(
-            path: AppRoute.dashboard,
-            name: 'dashboard',
-            pageBuilder: (context, state) => const NoTransitionPage(child: DashboardPage()),
-          ),
-          GoRoute(
-            path: AppRoute.courses,
-            name: 'courses',
-            pageBuilder: (context, state) => const NoTransitionPage(child: CoursesPage()),
-          ),
-          GoRoute(
-            path: AppRoute.community,
-            name: 'community',
-            pageBuilder: (context, state) => const NoTransitionPage(child: CommunityPage()),
-          ),
-          GoRoute(
-            path: AppRoute.contacts,
-            name: 'contacts',
-            pageBuilder: (context, state) => const NoTransitionPage(child: ContactsPage()),
-          ),
-          GoRoute(
-            path: AppRoute.calendar,
-            name: 'calendar',
-            pageBuilder: (context, state) => const NoTransitionPage(child: CalendarPage()),
-          ),
-          GoRoute(
-            path: AppRoute.tasks,
-            name: 'tasks',
-            pageBuilder: (context, state) => const NoTransitionPage(child: TasksPage()),
-          ),
-          GoRoute(
-            path: AppRoute.cvMaker,
-            name: 'cv-maker',
-            pageBuilder: (context, state) => const NoTransitionPage(child: CvMakerPage()),
-          ),
-          GoRoute(
-            path: AppRoute.skills,
-            name: 'skills',
-            pageBuilder: (context, state) => const NoTransitionPage(child: SkillsPage()),
-          ),
-          GoRoute(
-            path: AppRoute.routing,
-            name: 'routing',
-            pageBuilder: (context, state) => const NoTransitionPage(child: RoutingPage()),
-          ),
-          GoRoute(
-            path: AppRoute.tracker,
-            name: 'tracker',
-            pageBuilder: (context, state) => const NoTransitionPage(child: TrackerPage()),
-          ),
-          GoRoute(
-            path: AppRoute.settings,
-            name: 'settings',
-            pageBuilder: (context, state) => const NoTransitionPage(child: SettingsPage()),
-          ),
-          GoRoute(
-            path: AppRoute.signIn,
-            name: 'sign-in',
-            pageBuilder: (context, state) => const NoTransitionPage(child: SignInPage()),
-          ),
-          GoRoute(
-            path: AppRoute.signUp,
-            name: 'sign-up',
-            pageBuilder: (context, state) => const NoTransitionPage(child: SignUpPage()),
-          ),
-        ],
+      // Landing page
+      GoRoute(
+        path: AppRoute.landing,
+        name: 'landing',
+        builder: (context, state) => const LandingPage(),
       ),
+
+      // Student and Teacher sections mounted via modular routers
+      buildStudentShell(),
+      buildTeacherShell(),
     ],
   );
 });

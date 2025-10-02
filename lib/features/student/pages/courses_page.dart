@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../app_router.dart';
+import 'package:go_router/go_router.dart';
 
 class CoursesPage extends StatelessWidget {
   const CoursesPage({super.key});
@@ -7,15 +9,30 @@ class CoursesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: const [
-        _Header(title: 'Courses', icon: Icons.menu_book),
-        SizedBox(height: 12),
-        _CourseCard(title: 'Mathematics', subtitle: 'Linear Algebra • MTH201', progress: 0.6),
-        _CourseCard(title: 'Physics', subtitle: 'Quantum Mechanics • PHY305', progress: 0.3),
-        _CourseCard(title: 'Computer Science', subtitle: 'Data Structures • CS210', progress: 0.8),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(onPressed: () {
+          final nav = Navigator.of(context);
+          if (nav.canPop()) {
+            nav.pop();
+          } else {
+            context.go(AppRoute.dashboard);
+          }
+        }),
+        title: const Text('Courses'),
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: const [
+          _Header(title: 'Courses', icon: Icons.menu_book),
+          SizedBox(height: 12),
+          _CourseCard(title: 'Mathematics', subtitle: 'Linear Algebra • MTH201', progress: 0.6),
+          _CourseCard(title: 'Physics', subtitle: 'Quantum Mechanics • PHY305', progress: 0.3),
+          _CourseCard(title: 'Computer Science', subtitle: 'Data Structures • CS210', progress: 0.8),
+        ],
+      ),
     );
   }
 }
@@ -86,7 +103,7 @@ class _CourseCard extends StatelessWidget {
               value: progress,
               minHeight: 8,
               color: cs.primary,
-              backgroundColor: cs.surfaceVariant,
+              backgroundColor: cs.surfaceContainerHighest,
             ),
           ),
         ],

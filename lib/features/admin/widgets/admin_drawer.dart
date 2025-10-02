@@ -40,13 +40,15 @@ class AdminDrawer extends StatelessWidget {
             const Divider(height: 0),
             _Tile(icon: Icons.dashboard_customize_rounded, label: 'Dashboard', onTap: () => context.go(AppRoute.admin)),
             _Tile(icon: Icons.group, label: 'Users', onTap: () => context.go(AppRoute.adminUsers)),
+            _Tile(icon: Icons.table_view_outlined, label: 'Routine Setup', onTap: () => context.go(AppRoute.adminRoutine)),
+            _Tile(icon: Icons.meeting_room_outlined, label: 'Room Override', onTap: () => context.go(AppRoute.adminRoomOverride)),
             const Spacer(),
             const Divider(height: 0),
             _Tile(
               icon: Icons.logout_rounded,
               label: 'Sign out',
               onTap: () async {
-                await LastArea.clear();
+                // Sign out: Only navigate to default page. Do nothing else.
                 if (context.mounted) context.go(AppRoute.landing);
               },
             ),

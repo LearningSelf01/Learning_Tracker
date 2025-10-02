@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app_router.dart';
@@ -8,7 +7,14 @@ import '../pages/dashboard_page.dart';
 import '../pages/courses_page.dart';
 import '../pages/calendar_page.dart';
 import '../pages/tasks_page.dart';
+import '../pages/todo_page.dart';
 import '../pages/settings_page.dart';
+import '../pages/profile_settings_page.dart';
+import '../pages/user_profile_page.dart';
+import '../pages/student_details_page.dart';
+import '../pages/change_password_page.dart';
+import '../pages/family_details_page.dart';
+import '../pages/address_details_page.dart';
 import '../pages/community_page.dart';
 import '../pages/contacts_page.dart';
 import '../pages/tracker_page.dart';
@@ -57,6 +63,11 @@ final List<RouteBase> studentRoutes = <RouteBase>[
     pageBuilder: (context, state) => const NoTransitionPage(child: TasksPage()),
   ),
   GoRoute(
+    path: AppRoute.todo,
+    name: 'todo',
+    pageBuilder: (context, state) => const NoTransitionPage(child: TodoPage()),
+  ),
+  GoRoute(
     path: AppRoute.cvMaker,
     name: 'cv-maker',
     pageBuilder: (context, state) => const NoTransitionPage(child: CvMakerPage()),
@@ -80,6 +91,36 @@ final List<RouteBase> studentRoutes = <RouteBase>[
     path: AppRoute.settings,
     name: 'settings',
     pageBuilder: (context, state) => const NoTransitionPage(child: SettingsPage()),
+  ),
+  GoRoute(
+    path: AppRoute.settingsProfile,
+    name: 'settings-profile',
+    pageBuilder: (context, state) => const NoTransitionPage(child: ProfileSettingsPage()),
+  ),
+  GoRoute(
+    path: AppRoute.userProfile,
+    name: 'user-profile',
+    pageBuilder: (context, state) => const NoTransitionPage(child: UserProfilePage()),
+  ),
+  GoRoute(
+    path: AppRoute.settingsStudentDetails,
+    name: 'settings-student-details',
+    pageBuilder: (context, state) => const NoTransitionPage(child: StudentDetailsPage()),
+  ),
+  GoRoute(
+    path: AppRoute.settingsAddress,
+    name: 'settings-address',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AddressDetailsPage()),
+  ),
+  GoRoute(
+    path: AppRoute.settingsPassword,
+    name: 'settings-password',
+    pageBuilder: (context, state) => const NoTransitionPage(child: ChangePasswordPage()),
+  ),
+  GoRoute(
+    path: AppRoute.settingsFamily,
+    name: 'settings-family',
+    pageBuilder: (context, state) => const NoTransitionPage(child: FamilyDetailsPage()),
   ),
   GoRoute(
     path: AppRoute.signIn,

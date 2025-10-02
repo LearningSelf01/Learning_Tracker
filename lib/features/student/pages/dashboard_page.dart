@@ -1,29 +1,67 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../app_router.dart';
+import '../data/student_repository.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  late Future<String?> _nameFuture;
+  StreamSubscription<AuthState>? _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Cache once to avoid repeated network calls on rebuilds/hot restart
+    _nameFuture = StudentRepository().fetchStudentFullName();
+    // Also refresh when auth state changes (e.g., after logout) to avoid showing stale name
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+      if (mounted) {
+        setState(() {
+          _nameFuture = StudentRepository().fetchStudentFullName();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final user = Supabase.instance.client.auth.currentUser;
-    final String? fullName = user?.userMetadata?['full_name'] as String?;
-    // Use previous label when not logged in to preserve prior UX
-    final displayName = (fullName == null || fullName.trim().isEmpty) ? 'Dear' : fullName.trim();
+    final String? metaFullName = user?.userMetadata?['full_name'] as String?;
 
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 16, 16, 24 + bottomInset + kBottomNavigationBarHeight),
       children: [
         // Welcome Card
-        _WelcomeCard(
-          userName: displayName,
-          onTakeAssignment: () => context.go(AppRoute.tasks),
-          onViewSchedule: () => context.go(AppRoute.calendar),
+        FutureBuilder<String?>(
+          future: _nameFuture,
+          builder: (context, snapshot) {
+            final repoName = (snapshot.data ?? '').trim();
+            final metaName = (metaFullName ?? '').trim();
+            final name = repoName.isNotEmpty ? repoName : metaName;
+            final displayName = name.isEmpty ? 'Dear' : name;
+            return _WelcomeCard(
+              userName: displayName,
+              onTakeAssignment: () => context.go(AppRoute.tasks),
+              onViewSchedule: () => context.go(AppRoute.calendar),
+            );
+          },
         ),
         const SizedBox(height: 12),
         // Quick stats grid
@@ -53,7 +91,7 @@ class DashboardPage extends StatelessWidget {
           children: [
             Text("Today's Schedule", style: text.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () => context.go(AppRoute.routing),
               icon: const Icon(Icons.chevron_right),
               label: const Text('View All'),
             ),
@@ -169,7 +207,7 @@ class _WelcomeCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             cs.surface,
-            cs.surfaceVariant.withOpacity(0.85),
+            cs.surfaceContainerHighest.withOpacity(0.85),
           ],
         ),
         boxShadow: [
@@ -305,7 +343,7 @@ class _ScheduleCard extends StatelessWidget {
         case _StatusColorKey.info:
           return cs.secondary;
         case _StatusColorKey.neutral:
-          return cs.surfaceVariant;
+          return cs.surfaceContainerHighest;
       }
     }
 

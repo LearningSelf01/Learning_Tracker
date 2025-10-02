@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../app_router.dart';
 
 class CvMakerPage extends StatelessWidget {
   const CvMakerPage({super.key});
@@ -8,7 +10,15 @@ class CvMakerPage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CV Maker'),
+        leading: BackButton(onPressed: () {
+          final nav = Navigator.of(context);
+          if (nav.canPop()) {
+            nav.pop();
+          } else {
+            context.go(AppRoute.dashboard);
+          }
+        }),
+        title: const Text('Pursuing'),
         backgroundColor: cs.primary,
         foregroundColor: cs.onPrimary,
       ),

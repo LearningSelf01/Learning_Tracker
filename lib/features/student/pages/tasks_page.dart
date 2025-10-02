@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../app_router.dart';
 
 class TasksPage extends StatelessWidget {
   const TasksPage({super.key});
@@ -7,30 +9,45 @@ class TasksPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Row(
-          children: [
-            Icon(Icons.assignment, color: cs.primary),
-            const SizedBox(width: 8),
-            Text('Tasks', style: text.headlineSmall),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          children: const [
-            _FilterChip(label: 'All', selected: true),
-            _FilterChip(label: 'Due Today'),
-            _FilterChip(label: 'Completed'),
-          ],
-        ),
-        const SizedBox(height: 12),
-        const _TaskCard(title: 'Math Assignment', subtitle: 'Problem Set 3', due: 'Today, 6 PM', status: _TaskStatus.due),
-        const _TaskCard(title: 'Physics Lab Report', subtitle: 'Experiment 5', due: 'Tomorrow', status: _TaskStatus.upcoming),
-        const _TaskCard(title: 'CS Project', subtitle: 'Implement Linked List', due: 'Fri', status: _TaskStatus.inProgress),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(onPressed: () {
+          final nav = Navigator.of(context);
+          if (nav.canPop()) {
+            nav.pop();
+          } else {
+            context.go(AppRoute.dashboard);
+          }
+        }),
+        title: const Text('Tasks'),
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            children: [
+              Icon(Icons.assignment, color: cs.primary),
+              const SizedBox(width: 8),
+              Text('Tasks', style: text.headlineSmall),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            children: const [
+              _FilterChip(label: 'All', selected: true),
+              _FilterChip(label: 'Due Today'),
+              _FilterChip(label: 'Completed'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const _TaskCard(title: 'Math Assignment', subtitle: 'Problem Set 3', due: 'Today, 6 PM', status: _TaskStatus.due),
+          const _TaskCard(title: 'Physics Lab Report', subtitle: 'Experiment 5', due: 'Tomorrow', status: _TaskStatus.upcoming),
+          const _TaskCard(title: 'CS Project', subtitle: 'Implement Linked List', due: 'Fri', status: _TaskStatus.inProgress),
+        ],
+      ),
     );
   }
 }

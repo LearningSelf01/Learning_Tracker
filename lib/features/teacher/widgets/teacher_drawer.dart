@@ -48,6 +48,11 @@ class TeacherDrawer extends StatelessWidget {
               label: 'Classes',
               onTap: () => context.go(AppRoute.teacherClasses),
             ),
+            _DrawerTile(
+              icon: Icons.meeting_room_outlined,
+              label: 'Room Override',
+              onTap: () => context.go(AppRoute.teacherRoomOverride),
+            ),
             const Spacer(),
             const Divider(height: 0),
             _DrawerTile(
@@ -64,7 +69,7 @@ class TeacherDrawer extends StatelessWidget {
               icon: Icons.logout_rounded,
               label: 'Sign out',
               onTap: () async {
-                await LastArea.clear();
+                // Sign out: Only navigate to default page. Do nothing else.
                 if (context.mounted) context.go(AppRoute.landing);
               },
             ),

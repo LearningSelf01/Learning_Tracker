@@ -21,7 +21,14 @@ class AppRoute {
   static const courses = '/student/courses';
   static const calendar = '/student/calendar';
   static const tasks = '/student/tasks';
+  static const todo = '/student/todo';
   static const settings = '/student/settings';
+  static const settingsProfile = '/student/settings/profile';
+  static const settingsStudentDetails = '/student/settings/student-details';
+  static const settingsAddress = '/student/settings/address';
+  static const settingsPassword = '/student/settings/password';
+  static const settingsFamily = '/student/settings/family';
+  static const userProfile = '/student/user-profile';
   static const community = '/student/community';
   static const contacts = '/student/contacts';
   static const tracker = '/student/tracker';
@@ -33,11 +40,14 @@ class AppRoute {
   // Teacher namespace
   static const teacher = '/teacher';
   static const teacherClasses = '/teacher/classes';
+  static const teacherRoomOverride = '/teacher/room-override';
 
   // Admin namespace
   static const adminRoot = '/admin';
   static const admin = '/admin';
   static const adminUsers = '/admin/users';
+  static const adminRoutine = '/admin/routine';
+  static const adminRoomOverride = '/admin/room-override';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {

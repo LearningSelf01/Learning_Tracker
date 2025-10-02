@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../app_router.dart';
 import '../widgets/app_drawer.dart';
 import '../../../core/last_area.dart';
+import '../data/student_repository.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.child});
@@ -63,6 +64,9 @@ class _HomeShellState extends State<HomeShell> {
     super.initState();
     // Remember that user used the student area
     LastArea.setStudent();
+    // Preload student data so all pages can access it immediately
+    // Ignore result here; pages will use the cached data
+    StudentRepository().loadStudentData();
   }
 
   int _indexFromLocation(String location) {
@@ -100,16 +104,35 @@ class _HomeShellState extends State<HomeShell> {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final isAuthRoute = location.startsWith(AppRoute.signIn) || location.startsWith(AppRoute.signUp);
+    final isSettingsRoute = location.startsWith(AppRoute.settings);
+    final isProfileRoute = location.startsWith(AppRoute.userProfile);
+    // Sub-pages that will provide their own AppBar (with back button)
+    final isSubAppBarRoute =
+        location.startsWith(AppRoute.courses) ||
+        location.startsWith(AppRoute.calendar) ||
+        location.startsWith(AppRoute.tasks) ||
+        location.startsWith(AppRoute.routing) ||
+        location.startsWith(AppRoute.tracker) ||
+        location.startsWith(AppRoute.cvMaker) ||
+        location.startsWith(AppRoute.skills);
     final user = Supabase.instance.client.auth.currentUser;
     final String? fullName = user?.userMetadata?['full_name'] as String?;
     final bool isLoggedIn = user != null;
     final showBanner = _bannerVisible && !isAuthRoute && !isLoggedIn;
 
     return Scaffold(
-      appBar: isAuthRoute
+      appBar: (isAuthRoute || isSettingsRoute || isProfileRoute || isSubAppBarRoute)
           ? null
           : AppBar(
-        title: Text(fullName == null || fullName.trim().isEmpty ? 'Learning Tracker' : fullName),
+        title: FutureBuilder<String?>(
+          future: StudentRepository().fetchStudentFullName(),
+          builder: (context, snap) {
+            final repoName = (snap.data ?? '').trim();
+            final metaName = (fullName ?? '').trim();
+            final name = repoName.isNotEmpty ? repoName : metaName;
+            return Text(name.isEmpty ? 'Learning Tracker' : name);
+          },
+        ),
         actions: [
           // Notifications bell with a small badge
           IconButton(
@@ -138,16 +161,39 @@ class _HomeShellState extends State<HomeShell> {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              if (!isLoggedIn) {
-                setState(() => _bannerVisible = !_bannerVisible);
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Tooltip(
-                message: 'Profile',
+          // Profile avatar: if logged in show menu, else toggle sign-in banner
+          if (isLoggedIn)
+            PopupMenuButton<int>(
+              tooltip: 'Profile',
+              offset: const Offset(0, 40),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 1,
+                  child: ListTile(leading: Icon(Icons.person), title: Text('Profile')),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+                ),
+                PopupMenuDivider(height: 8),
+                PopupMenuItem(
+                  value: 3,
+                  child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out')),
+                ),
+              ],
+              onSelected: (v) async {
+                if (v == 1) {
+                  context.push(AppRoute.userProfile);
+                } else if (v == 2) {
+                  context.push(AppRoute.settings);
+                } else if (v == 3) {
+                  // Sign out: Only navigate to default page. Do nothing else.
+                  if (mounted) context.go(AppRoute.landing);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: CircleAvatar(
                   radius: 16,
                   backgroundColor: Colors.white,
@@ -157,11 +203,29 @@ class _HomeShellState extends State<HomeShell> {
                   ),
                 ),
               ),
+            )
+          else
+            GestureDetector(
+              onTap: () => setState(() => _bannerVisible = !_bannerVisible),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Tooltip(
+                  message: 'Profile',
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
             ),
-        ),
+        
         ],
       ),
-      drawer: isAuthRoute ? null : const AppDrawer(),
+      drawer: (isAuthRoute || isProfileRoute) ? null : const AppDrawer(),
       body: SafeArea(
         child: Column(
           children: [
@@ -227,7 +291,7 @@ class _HomeShellState extends State<HomeShell> {
           ],
         ),
       ),
-      bottomNavigationBar: isAuthRoute
+      bottomNavigationBar: (isAuthRoute || isProfileRoute)
           ? null
           : NavigationBar(
               selectedIndex: currentIndex,

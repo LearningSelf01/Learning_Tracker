@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app_router.dart';
+import '../../../core/last_area.dart';
 
 class TeacherDrawer extends StatelessWidget {
   const TeacherDrawer({super.key});
@@ -62,7 +63,10 @@ class TeacherDrawer extends StatelessWidget {
             _DrawerTile(
               icon: Icons.logout_rounded,
               label: 'Sign out',
-              onTap: () => context.go(AppRoute.landing),
+              onTap: () async {
+                await LastArea.clear();
+                if (context.mounted) context.go(AppRoute.landing);
+              },
             ),
           ],
         ),

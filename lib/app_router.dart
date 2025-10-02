@@ -1,10 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/last_area.dart';
 
 import 'features/auth/landing_page.dart';
 import 'features/student/widgets/student_router.dart';
 import 'features/teacher/widgets/teacher_router.dart';
+import 'features/admin/widgets/admin_router.dart';
 
 // Route names
 class AppRoute {
@@ -29,11 +33,30 @@ class AppRoute {
   // Teacher namespace
   static const teacher = '/teacher';
   static const teacherClasses = '/teacher/classes';
+
+  // Admin namespace
+  static const adminRoot = '/admin';
+  static const admin = '/admin';
+  static const adminUsers = '/admin/users';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Listen to Supabase auth state to refresh router on sign in/out
+  final authStream = Supabase.instance.client.auth.onAuthStateChange;
+  final user = Supabase.instance.client.auth.currentUser;
+  final last = LastArea.cached;
+  final initial = last == 'teacher'
+      ? AppRoute.teacher
+      : last == 'student'
+          ? AppRoute.dashboard
+          : last == 'admin'
+              ? AppRoute.admin
+              : user == null
+                  ? AppRoute.landing
+                  : AppRoute.dashboard;
   return GoRouter(
-    initialLocation: AppRoute.landing,
+    initialLocation: initial,
+    refreshListenable: GoRouterRefreshStream(authStream),
     routes: [
       // Landing page
       GoRoute(
@@ -45,6 +68,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Student and Teacher sections mounted via modular routers
       buildStudentShell(),
       buildTeacherShell(),
+      buildAdminShell(),
     ],
   );
 });
+
+// Simple ChangeNotifier wrapper to refresh GoRouter on auth state changes
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.asBroadcastStream().listen((_) {
+      notifyListeners();
+    });
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}

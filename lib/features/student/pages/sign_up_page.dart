@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -19,6 +20,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _confirmController = TextEditingController();
   bool _obscure = true;
   bool _created = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -30,15 +32,249 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      FocusScope.of(context).unfocus();
+  Future<void> _submit() async {
+    if (!mounted) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _loading = true;
+    });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final fullName = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
+
+    try {
+      final supabase = Supabase.instance.client;
+      final res = await supabase.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+          'phone': phone,
+          'role': 'student',
+        },
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(content: Text('Creating account for ${_emailController.text.trim()}')),
+          SnackBar(
+            content: Text(
+              res.user?.emailConfirmedAt == null
+                  ? 'Verification email sent to $email. Please verify to continue.'
+                  : 'Account created successfully. You can sign in now.',
+            ),
+          ),
         );
-      setState(() => _created = true);
+
+      // Trigger SMS OTP to verify the provided phone number, if any
+      if (phone.isNotEmpty) {
+        await _startPhoneVerification(phone);
+      }
+
+      setState(() {
+        _created = true;
+      });
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Something went wrong. Please try again.')),
+        );
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _startPhoneVerification(String phone) async {
+    final supabase = Supabase.instance.client;
+    try {
+      // This sends an OTP SMS to the phone number
+      await supabase.auth.updateUser(UserAttributes(phone: phone));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('OTP sent to $phone')),
+        );
+
+      await _promptOtpDialog(phone);
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Phone verification failed: ${e.message}')),
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Could not start phone verification.')),
+        );
+    }
+  }
+
+  Future<void> _promptOtpDialog(String phone) async {
+    final codeController = TextEditingController();
+    bool verifying = false;
+    bool resending = false;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setState) {
+          return AlertDialog(
+            title: const Text('Verify phone'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Enter the 6-digit code sent to $phone'),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: codeController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'OTP code',
+                  ),
+                  maxLength: 6,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: verifying ? null : () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: (verifying || resending)
+                    ? null
+                    : () async {
+                        setState(() => resending = true);
+                        await _resendSmsOtp(phone);
+                        if (ctx.mounted) setState(() => resending = false);
+                      },
+                child: resending
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Resend code'),
+              ),
+              FilledButton(
+                onPressed: verifying
+                    ? null
+                    : () async {
+                        final code = codeController.text.trim();
+                        if (code.length < 4) return; // basic guard
+                        setState(() => verifying = true);
+                        try {
+                          await Supabase.instance.client.auth.verifyOTP(
+                            phone: phone,
+                            token: code,
+                            type: OtpType.sms,
+                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                const SnackBar(content: Text('Phone verified successfully.')),
+                              );
+                          }
+                          if (ctx.mounted) Navigator.of(ctx).pop();
+                        } on AuthException catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                SnackBar(content: Text('Invalid code: ${e.message}')),
+                              );
+                          }
+                        } finally {
+                          if (ctx.mounted) setState(() => verifying = false);
+                        }
+                      },
+                child: verifying
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Verify'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+    codeController.dispose();
+  }
+
+  Future<void> _resendEmailVerification() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) return;
+    try {
+      await Supabase.instance.client.auth.resend(
+        type: OtpType.signup,
+        email: email,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Verification email resent to $email')),
+        );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Could not resend email: ${e.message}')),
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Unexpected error while resending email.')),
+        );
+    }
+  }
+
+  Future<void> _resendSmsOtp(String phone) async {
+    try {
+      await Supabase.instance.client.auth.updateUser(UserAttributes(phone: phone));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('OTP resent to $phone')),
+        );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Could not resend code: ${e.message}')),
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Unexpected error while resending code.')),
+        );
     }
   }
 
@@ -185,9 +421,15 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
-                  onPressed: _submit,
-                  icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Create account'),
+                  onPressed: _loading ? null : _submit,
+                  icon: _loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.person_add_alt_1),
+                  label: Text(_loading ? 'Creating...' : 'Create account'),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -207,6 +449,32 @@ class _SignUpPageState extends State<SignUpPage> {
                   visible: _created,
                   child: Column(
                     children: [
+                      const SizedBox(height: 8),
+                      // Post-signup actions: Resend email and SMS OTP
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _resendEmailVerification,
+                            icon: const Icon(Icons.mark_email_unread_outlined),
+                            label: const Text('Resend verification email'),
+                          ),
+                          if (_phoneController.text.trim().isNotEmpty) ...[
+                            OutlinedButton.icon(
+                              onPressed: () => _resendSmsOtp(_phoneController.text.trim()),
+                              icon: const Icon(Icons.sms_outlined),
+                              label: const Text('Resend SMS code'),
+                            ),
+                            TextButton.icon(
+                              onPressed: () => _promptOtpDialog(_phoneController.text.trim()),
+                              icon: const Icon(Icons.dialpad_outlined),
+                              label: const Text('Enter code'),
+                            ),
+                          ],
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
                         onPressed: () {

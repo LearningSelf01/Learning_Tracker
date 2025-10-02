@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app_router.dart';
 import '../pages/home_page.dart';
@@ -84,10 +85,20 @@ final List<RouteBase> studentRoutes = <RouteBase>[
     path: AppRoute.signIn,
     name: 'sign-in',
     pageBuilder: (context, state) => const NoTransitionPage(child: SignInPage()),
+    redirect: (context, state) {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) return AppRoute.dashboard;
+      return null;
+    },
   ),
   GoRoute(
     path: AppRoute.signUp,
     name: 'sign-up',
     pageBuilder: (context, state) => const NoTransitionPage(child: SignUpPage()),
+    redirect: (context, state) {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) return AppRoute.dashboard;
+      return null;
+    },
   ),
 ];

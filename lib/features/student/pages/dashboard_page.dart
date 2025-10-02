@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../app_router.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -9,6 +10,10 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final user = Supabase.instance.client.auth.currentUser;
+    final String? fullName = user?.userMetadata?['full_name'] as String?;
+    // Use previous label when not logged in to preserve prior UX
+    final displayName = (fullName == null || fullName.trim().isEmpty) ? 'Dear' : fullName.trim();
 
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return ListView(
@@ -16,7 +21,7 @@ class DashboardPage extends StatelessWidget {
       children: [
         // Welcome Card
         _WelcomeCard(
-          userName: 'Dear',
+          userName: displayName,
           onTakeAssignment: () => context.go(AppRoute.tasks),
           onViewSchedule: () => context.go(AppRoute.calendar),
         ),

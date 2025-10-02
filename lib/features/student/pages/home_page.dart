@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app_router.dart';
 import '../widgets/app_drawer.dart';
+import '../../../core/last_area.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.child});
@@ -56,6 +58,13 @@ class _HomeShellState extends State<HomeShell> {
   // Hidden by default; shown when user taps the profile button
   bool _bannerVisible = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Remember that user used the student area
+    LastArea.setStudent();
+  }
+
   int _indexFromLocation(String location) {
     if (location.startsWith(AppRoute.courses)) return 1;
     if (location.startsWith(AppRoute.community)) return 2;
@@ -91,13 +100,16 @@ class _HomeShellState extends State<HomeShell> {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final isAuthRoute = location.startsWith(AppRoute.signIn) || location.startsWith(AppRoute.signUp);
-    final showBanner = _bannerVisible && !isAuthRoute;
+    final user = Supabase.instance.client.auth.currentUser;
+    final String? fullName = user?.userMetadata?['full_name'] as String?;
+    final bool isLoggedIn = user != null;
+    final showBanner = _bannerVisible && !isAuthRoute && !isLoggedIn;
 
     return Scaffold(
       appBar: isAuthRoute
           ? null
           : AppBar(
-        title: const Text('Learning Tracker'),
+        title: Text(fullName == null || fullName.trim().isEmpty ? 'Learning Tracker' : fullName),
         actions: [
           // Notifications bell with a small badge
           IconButton(
@@ -127,7 +139,11 @@ class _HomeShellState extends State<HomeShell> {
             ),
           ),
           GestureDetector(
-            onTap: () => setState(() => _bannerVisible = !_bannerVisible),
+            onTap: () {
+              if (!isLoggedIn) {
+                setState(() => _bannerVisible = !_bannerVisible);
+              }
+            },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Tooltip(

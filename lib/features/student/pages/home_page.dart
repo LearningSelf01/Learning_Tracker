@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -53,11 +54,14 @@ class _TopNavChip extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class _HomeShellState extends State<HomeShell> {
   // Hidden by default; shown when user taps the profile button
   bool _bannerVisible = false;
+  Future<String?>? _titleNameFuture;
+  StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
@@ -67,6 +71,14 @@ class _HomeShellState extends State<HomeShell> {
     // Preload student data so all pages can access it immediately
     // Ignore result here; pages will use the cached data
     StudentRepository().loadStudentData();
+    // Cache the AppBar title lookup and refresh on auth changes
+    _titleNameFuture = StudentRepository().fetchStudentFullName();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+      if (!mounted) return;
+      setState(() {
+        _titleNameFuture = StudentRepository().fetchStudentFullName();
+      });
+    });
   }
 
   int _indexFromLocation(String location) {
@@ -125,7 +137,7 @@ class _HomeShellState extends State<HomeShell> {
           ? null
           : AppBar(
         title: FutureBuilder<String?>(
-          future: StudentRepository().fetchStudentFullName(),
+          future: _titleNameFuture,
           builder: (context, snap) {
             final repoName = (snap.data ?? '').trim();
             final metaName = (fullName ?? '').trim();
@@ -305,5 +317,11 @@ class _HomeShellState extends State<HomeShell> {
               ],
             ),
     );
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
   }
 }

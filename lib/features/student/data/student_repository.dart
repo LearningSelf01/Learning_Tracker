@@ -6,8 +6,8 @@ class StudentRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   // In-memory cache of the entire student_data row to avoid repeated queries
-  Map<String, dynamic>? _studentDataCache;
-  String? _cachedStudentId;
+  static Map<String, dynamic>? _studentDataCache;
+  static String? _cachedStudentId;
 
   // Adjust table and column names here if they differ in your Supabase schema
   static const String _validationTable = 'student_validation';
@@ -36,10 +36,11 @@ class StudentRepository {
 
       // 1) Get student_id from validation table using auth user_id
       final validation = await _supabase
-          .from(_validationTable)
-          .select(_validationStudentIdCol)
-          .eq(_validationUserIdCol, user.id)
-          .maybeSingle();
+              .from(_validationTable)
+              .select(_validationStudentIdCol)
+              .eq(_validationUserIdCol, user.id)
+              .maybeSingle()
+          .timeout(const Duration(seconds: 3));
 
       final studentId = validation == null ? null : validation[_validationStudentIdCol];
 
@@ -51,10 +52,11 @@ class StudentRepository {
 
       // 2) Fetch name parts from student_data (also cache full row)
       final profile = await _supabase
-          .from(_studentDataTable)
-          .select('*')
-          .eq(_studentDataIdCol, studentId)
-          .maybeSingle();
+              .from(_studentDataTable)
+              .select('*')
+              .eq(_studentDataIdCol, studentId)
+              .maybeSingle()
+          .timeout(const Duration(seconds: 3));
 
       if (profile == null) {
         final fullName = user.userMetadata?['full_name'] as String?;
@@ -74,6 +76,9 @@ class StudentRepository {
         return _normalizeFullName(fullName);
       }
       return parts.join(' ');
+    } on TimeoutException {
+      final fullName = _supabase.auth.currentUser?.userMetadata?['full_name'] as String?;
+      return _normalizeFullName(fullName);
     } catch (_) {
       // Gracefully fall back on any error
       final fullName = _supabase.auth.currentUser?.userMetadata?['full_name'] as String?;
@@ -130,6 +135,10 @@ class StudentRepository {
       final last = (_studentDataCache?[_lastNameCol] ?? '').toString().trim();
 
       return (firstName: first, middleName: middle, lastName: last, studentId: studentId);
+    } on TimeoutException {
+      final fullName = _normalizeFullName(_supabase.auth.currentUser?.userMetadata?['full_name'] as String?);
+      final parts = _splitFullName(fullName);
+      return (firstName: parts.$1, middleName: parts.$2, lastName: parts.$3, studentId: null);
     } catch (_) {
       final fullName = _normalizeFullName(_supabase.auth.currentUser?.userMetadata?['full_name'] as String?);
       final parts = _splitFullName(fullName);
@@ -161,11 +170,14 @@ class StudentRepository {
     if (user == null) return null;
     try {
       final validation = await _supabase
-          .from(_validationTable)
-          .select(_validationStudentIdCol)
-          .eq(_validationUserIdCol, user.id)
-          .maybeSingle();
+              .from(_validationTable)
+              .select(_validationStudentIdCol)
+              .eq(_validationUserIdCol, user.id)
+              .maybeSingle()
+          .timeout(const Duration(seconds: 3));
       return validation == null ? null : validation[_validationStudentIdCol]?.toString();
+    } on TimeoutException {
+      return null;
     } catch (_) {
       return null;
     }
@@ -178,10 +190,11 @@ class StudentRepository {
     if (studentId == null) return null;
     try {
       final row = await _supabase
-          .from(_studentDataTable)
-          .select('*')
-          .eq(_studentDataIdCol, studentId)
-          .maybeSingle();
+              .from(_studentDataTable)
+              .select('*')
+              .eq(_studentDataIdCol, studentId)
+              .maybeSingle()
+          .timeout(const Duration(seconds: 3));
       // row is dynamic?, normalize to Map<String, dynamic>
       if (row == null) return null;
       final map = Map<String, dynamic>.from(row as Map);

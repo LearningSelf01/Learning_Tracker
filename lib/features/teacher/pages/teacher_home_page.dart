@@ -24,7 +24,10 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
     LastArea.setTeacher();
   }
   int _indexFromLocation(String location) {
-    if (location.startsWith(AppRoute.teacherClasses)) return 1;
+    if (location.startsWith(AppRoute.teacherCourses)) return 1;
+    if (location.startsWith(AppRoute.teacherCommunity)) return 2;
+    if (location.startsWith(AppRoute.teacherContacts)) return 3;
+    if (location.startsWith(AppRoute.teacherTracker)) return 4;
     return 0; // dashboard
   }
 
@@ -34,7 +37,16 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
         context.go(AppRoute.teacher);
         break;
       case 1:
-        context.go(AppRoute.teacherClasses);
+        context.go(AppRoute.teacherCourses);
+        break;
+      case 2:
+        context.go(AppRoute.teacherCommunity);
+        break;
+      case 3:
+        context.go(AppRoute.teacherContacts);
+        break;
+      case 4:
+        context.go(AppRoute.teacherTracker);
         break;
     }
   }
@@ -137,7 +149,7 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                         TextButton(
                           onPressed: () {
                             setState(() => _bannerVisible = false);
-                            context.go(AppRoute.signUp);
+                            context.go(AppRoute.teacherSignUp);
                           },
                           child: const Text('Sign Up'),
                         ),
@@ -145,7 +157,7 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                         OutlinedButton(
                           onPressed: () {
                             setState(() => _bannerVisible = false);
-                            context.go(AppRoute.signIn);
+                            context.go(AppRoute.teacherSignIn);
                           },
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: cs.primary),
@@ -166,16 +178,11 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
         selectedIndex: currentIndex,
         onDestinationSelected: (i) => _onItemTapped(context, i),
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.class_outlined),
-            selectedIcon: Icon(Icons.class_),
-            label: 'Classes',
-          ),
+          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Courses'),
+          NavigationDestination(icon: Icon(Icons.group_outlined), selectedIcon: Icon(Icons.group), label: 'Community'),
+          NavigationDestination(icon: Icon(Icons.people_alt_outlined), selectedIcon: Icon(Icons.people_alt), label: 'Contacts'),
+          NavigationDestination(icon: Icon(Icons.track_changes_outlined), selectedIcon: Icon(Icons.track_changes), label: 'Tracker'),
         ],
       ),
     );

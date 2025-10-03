@@ -41,6 +41,12 @@ class AppRoute {
   static const teacher = '/teacher';
   static const teacherClasses = '/teacher/classes';
   static const teacherRoomOverride = '/teacher/room-override';
+  static const teacherCourses = '/teacher/courses';
+  static const teacherCommunity = '/teacher/community';
+  static const teacherContacts = '/teacher/contacts';
+  static const teacherTracker = '/teacher/tracker';
+  static const teacherSignIn = '/teacher/sign-in';
+  static const teacherSignUp = '/teacher/sign-up';
 
   // Admin namespace
   static const adminRoot = '/admin';
@@ -48,6 +54,10 @@ class AppRoute {
   static const adminUsers = '/admin/users';
   static const adminRoutine = '/admin/routine';
   static const adminRoomOverride = '/admin/room-override';
+  static const adminCourses = '/admin/courses';
+  static const adminCommunity = '/admin/community';
+  static const adminContacts = '/admin/contacts';
+  static const adminTracker = '/admin/tracker';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -87,14 +97,20 @@ final routerProvider = Provider<GoRouter>((ref) {
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     _subscription = stream.asBroadcastStream().listen((_) {
-      notifyListeners();
+      // Debounce rapid successive auth events
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 250), () {
+        if (hasListeners) notifyListeners();
+      });
     });
   }
 
   late final StreamSubscription<dynamic> _subscription;
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _subscription.cancel();
     super.dispose();
   }

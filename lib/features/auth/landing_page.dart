@@ -22,7 +22,7 @@ class LandingPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(200, 50),
               ),
-              child: const Text('Student Login'),
+              child: const Text('Enter Student app'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -30,7 +30,7 @@ class LandingPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(200, 50),
               ),
-              child: const Text('Teacher Login'),
+              child: const Text('Enter Teacher app'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

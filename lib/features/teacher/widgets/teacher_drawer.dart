@@ -92,7 +92,7 @@ class _DrawerTile extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.of(context).pop();
-        Future.microtask(onTap);
+        WidgetsBinding.instance.addPostFrameCallback((_) => onTap());
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

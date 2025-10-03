@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permissions for camera and image picking -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Android 13+ (API 33): granular media permission -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- For Android 12 and below: legacy external storage read permission -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <application
         android:label="learning_tracker"
         android:name="${applicationName}"

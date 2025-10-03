@@ -27,7 +27,9 @@ class AppDrawer extends StatelessWidget {
                 onTap: () {
                   // Close the drawer first, then go to profile page
                   Navigator.of(context).pop();
-                  Future.microtask(() => context.push(AppRoute.userProfile));
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) context.push(AppRoute.userProfile);
+                  });
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -150,7 +152,7 @@ class _DrawerTile extends StatelessWidget {
       onTap: () {
         // Close the drawer first, then navigate
         Navigator.of(context).pop();
-        Future.microtask(onTap);
+        WidgetsBinding.instance.addPostFrameCallback((_) => onTap());
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

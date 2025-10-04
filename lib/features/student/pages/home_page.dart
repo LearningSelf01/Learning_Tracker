@@ -219,7 +219,7 @@ class _HomeShellState extends State<HomeShell> {
                       try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
                       StudentRepository().clearCache();
                       await LastArea.clear();
-                      parentCtx.go(AppRoute.landing);
+                      // Do not navigate here; auth change will trigger router redirect to landing.
                     }
                   });
                 },

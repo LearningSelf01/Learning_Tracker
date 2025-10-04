@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app_router.dart';
+import '../../../core/last_area.dart';
 
 class TeacherSettingsPage extends StatelessWidget {
   const TeacherSettingsPage({super.key});
@@ -36,7 +37,8 @@ class TeacherSettingsPage extends StatelessWidget {
             subtitle: const Text('Sign out from this device'),
             onTap: () async {
               try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
-              if (context.mounted) context.go(AppRoute.teacher);
+              await LastArea.clear();
+              // Do not navigate; router will redirect after auth state change.
             },
           ),
         ],

@@ -54,13 +54,13 @@ class SettingsPage extends StatelessWidget {
             subtitle: 'Sign out from this device',
             danger: true,
             onTap: () async {
-              // Hard logout: end session, clear cached data, and show student homepage (guest view)
+              // Hard logout: end session and clear cache. Router will redirect after auth changes.
               try {
                 await Supabase.instance.client.auth.signOut();
               } catch (_) {}
               StudentRepository().clearCache();
-              await LastArea.setStudent();
-              if (context.mounted) context.go(AppRoute.dashboard);
+              await LastArea.clear();
+              // Do not navigate here; avoid using context during widget disposal.
             },
           ),
         ];

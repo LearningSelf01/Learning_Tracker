@@ -133,7 +133,7 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                         } else if (v == 3) {
                           try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
                           await LastArea.clear();
-                          if (context.mounted) context.go(AppRoute.landing);
+                          // Don't navigate here; auth change will trigger router redirect.
                         }
                       });
                     },

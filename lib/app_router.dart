@@ -55,6 +55,8 @@ class AppRoute {
   // Admin namespace
   static const adminRoot = '/admin';
   static const admin = '/admin';
+  static const adminSignIn = '/admin/sign-in';
+  static const adminSignUp = '/admin/sign-up';
   static const adminUsers = '/admin/users';
   static const adminRoutine = '/admin/routine';
   static const adminRoomOverride = '/admin/room-override';
@@ -84,6 +86,65 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: initial,
     refreshListenable: GoRouterRefreshStream(authStream),
+    redirect: (context, state) async {
+      final client = Supabase.instance.client;
+      final user = client.auth.currentUser;
+
+      // Public routes allowed without auth
+      const publicPaths = {
+        AppRoute.landing,
+        AppRoute.signIn,
+        AppRoute.signUp,
+        AppRoute.teacherSignIn,
+        AppRoute.teacherSignUp,
+        AppRoute.adminSignIn,
+        AppRoute.adminSignUp,
+      };
+
+      final path = state.uri.toString();
+
+      // If not signed in: allow only public paths
+      if (user == null) {
+        final isPublic = publicPaths.any((p) => path.startsWith(p));
+        return isPublic ? null : AppRoute.landing;
+      }
+
+      // Signed in: look up role and send to proper area root if needed
+      try {
+        final data = await client
+            .from('profiles')
+            .select('user_type')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        final role = (data?['user_type'] as String?) ?? 'student';
+
+        // Persist last area for initial boot optimization
+        if (role == 'teacher') {
+          await LastArea.setTeacher();
+        } else if (role == 'admin') {
+          await LastArea.setAdmin();
+        } else {
+          await LastArea.setStudent();
+        }
+
+        // If already under correct namespace, do nothing
+        final isInStudent = path.startsWith(AppRoute.studentRoot);
+        final isInTeacher = path.startsWith(AppRoute.teacher);
+        final isInAdmin = path.startsWith(AppRoute.adminRoot) || path.startsWith(AppRoute.admin);
+
+        if (role == 'teacher' && !isInTeacher) return AppRoute.teacher;
+        if (role == 'admin' && !isInAdmin) return AppRoute.admin;
+        if (role == 'student' && !isInStudent) return AppRoute.dashboard;
+
+        return null;
+      } catch (_) {
+        // On failure to read profile, default to student area
+        await LastArea.setStudent();
+        final isInStudent = path.startsWith(AppRoute.studentRoot);
+        return isInStudent ? null : AppRoute.dashboard;
+      }
+    },
     routes: [
       // Landing page
       GoRoute(

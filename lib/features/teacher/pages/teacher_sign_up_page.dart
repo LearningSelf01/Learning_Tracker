@@ -83,7 +83,7 @@ class _TeacherSignUpPageState extends State<TeacherSignUpPage> {
         data: {
           'full_name': fullName,
           'phone': phone,
-          'role': 'teacher',
+          'user_type': 'teacher',
         },
       );
 

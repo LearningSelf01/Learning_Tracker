@@ -54,7 +54,7 @@ class _SignUpPageState extends State<SignUpPage> {
         data: {
           'full_name': fullName,
           'phone': phone,
-          'role': 'student',
+          'user_type': 'student',
         },
       );
 

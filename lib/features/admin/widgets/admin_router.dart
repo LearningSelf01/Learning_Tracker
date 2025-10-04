@@ -10,6 +10,8 @@ import '../pages/admin_courses_page.dart';
 import '../pages/admin_community_page.dart';
 import '../pages/admin_contacts_page.dart';
 import '../pages/admin_tracker_page.dart';
+import '../pages/admin_sign_in_page.dart';
+import '../pages/admin_sign_up_page.dart';
 
 RouteBase buildAdminShell() {
   return ShellRoute(
@@ -23,6 +25,16 @@ final List<RouteBase> adminRoutes = <RouteBase>[
     path: AppRoute.admin,
     name: 'admin',
     pageBuilder: (context, state) => const NoTransitionPage(child: AdminDashboard()),
+  ),
+  GoRoute(
+    path: AppRoute.adminSignIn,
+    name: 'admin-sign-in',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminSignInPage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminSignUp,
+    name: 'admin-sign-up',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminSignUpPage()),
   ),
   GoRoute(
     path: AppRoute.adminCourses,

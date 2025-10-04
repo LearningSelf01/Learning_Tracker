@@ -218,8 +218,8 @@ class _HomeShellState extends State<HomeShell> {
                     } else if (selected == 3) {
                       try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
                       StudentRepository().clearCache();
-                      await LastArea.setStudent();
-                      parentCtx.go(AppRoute.dashboard);
+                      await LastArea.clear();
+                      parentCtx.go(AppRoute.landing);
                     }
                   });
                 },

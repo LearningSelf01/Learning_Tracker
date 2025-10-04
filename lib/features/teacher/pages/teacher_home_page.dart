@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app_router.dart';
 import '../widgets/teacher_drawer.dart';
@@ -59,6 +60,8 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
         location.startsWith(AppRoute.teacherSignIn) || location.startsWith(AppRoute.teacherSignUp);
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final user = Supabase.instance.client.auth.currentUser;
+    final bool isLoggedIn = user != null;
 
     return Scaffold(
       appBar: onAuthScreens
@@ -66,20 +69,22 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
           : AppBar(
               title: const Text('Teacher Dashboard'),
               actions: [
-                TextButton(
-                  onPressed: () => context.go(AppRoute.teacherSignUp),
-                  child: Text(
-                    'Sign Up',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                if (!isLoggedIn) ...[
+                  TextButton(
+                    onPressed: () => context.go(AppRoute.teacherSignUp),
+                    child: Text(
+                      'Sign Up',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                    ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => context.go(AppRoute.teacherSignIn),
-                  child: Text(
-                    'Sign In',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  TextButton(
+                    onPressed: () => context.go(AppRoute.teacherSignIn),
+                    child: Text(
+                      'Sign In',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                    ),
                   ),
-                ),
+                ],
                 // Notifications bell with a small badge
                 IconButton(
                   tooltip: 'Notifications',
@@ -107,12 +112,33 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => setState(() => _bannerVisible = !_bannerVisible),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Tooltip(
-                      message: 'Profile',
+                if (isLoggedIn)
+                  PopupMenuButton<int>(
+                    tooltip: 'Profile',
+                    offset: const Offset(0, 40),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.person), title: Text('Profile'))),
+                      PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.settings), title: Text('Settings'))),
+                      PopupMenuDivider(height: 8),
+                      PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
+                    ],
+                    onSelected: (v) async {
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        if (!context.mounted) return;
+                        if (v == 1) {
+                          context.push(AppRoute.teacherSettingsProfile);
+                        } else if (v == 2) {
+                          context.push(AppRoute.teacherSettings);
+                        } else if (v == 3) {
+                          try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
+                          await LastArea.clear();
+                          if (context.mounted) context.go(AppRoute.landing);
+                        }
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.white,
@@ -122,8 +148,25 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                         ),
                       ),
                     ),
+                  )
+                else
+                  GestureDetector(
+                    onTap: () => setState(() => _bannerVisible = !_bannerVisible),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Tooltip(
+                        message: 'Profile',
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.person,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
               ],
             ),
       drawer: const TeacherDrawer(),

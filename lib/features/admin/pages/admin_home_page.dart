@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app_router.dart';
 import '../widgets/admin_drawer.dart';
@@ -90,25 +91,44 @@ class _AdminHomeShellState extends State<AdminHomeShell> {
             tooltip: 'Profile',
             offset: const Offset(0, 40),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.group), title: Text('Users'))),
-              PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.schedule), title: Text('Routine Setup'))),
-              PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.meeting_room), title: Text('Room Override'))),
-              PopupMenuDivider(height: 8),
-              PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
-            ],
+            itemBuilder: (context) {
+              final user = Supabase.instance.client.auth.currentUser;
+              if (user == null) {
+                return const [
+                  PopupMenuItem(value: 10, child: ListTile(leading: Icon(Icons.login), title: Text('Sign in'))),
+                  PopupMenuItem(value: 11, child: ListTile(leading: Icon(Icons.person_add_alt), title: Text('Sign up'))),
+                ];
+              }
+              return const [
+                PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.group), title: Text('Users'))),
+                PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.schedule), title: Text('Routine Setup'))),
+                PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.meeting_room), title: Text('Room Override'))),
+                PopupMenuDivider(height: 8),
+                PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
+              ];
+            },
             onSelected: (v) async {
               // Defer to next frame so popup menu fully disposes before navigating
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (!context.mounted) return;
-                if (v == 1) {
+                if (v == 10) {
+                  context.push(AppRoute.adminSignIn);
+                } else if (v == 11) {
+                  context.push(AppRoute.adminSignUp);
+                } else if (v == 1) {
                   context.push(AppRoute.adminUsers);
                 } else if (v == 2) {
                   context.push(AppRoute.adminRoutine);
                 } else if (v == 3) {
                   context.push(AppRoute.adminRoomOverride);
                 } else if (v == 4) {
-                  context.go(AppRoute.landing);
+                  () async {
+                    try {
+                      await Supabase.instance.client.auth.signOut();
+                    } catch (_) {}
+                    await LastArea.clear();
+                    if (context.mounted) context.go(AppRoute.landing);
+                  }();
                 }
               });
             },

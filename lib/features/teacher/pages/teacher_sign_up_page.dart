@@ -32,6 +32,37 @@ class _TeacherSignUpPageState extends State<TeacherSignUpPage> {
     super.dispose();
   }
 
+  Future<void> _resendEmailVerification() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) return;
+    try {
+      await Supabase.instance.client.auth.resend(
+        type: OtpType.signup,
+        email: email,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Verification email resent to $email')),
+        );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Could not resend email: ${e.message}')),
+        );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('Unexpected error while resending email.')),
+        );
+    }
+  }
+
   Future<void> _submit() async {
     if (!mounted) return;
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -70,8 +101,20 @@ class _TeacherSignUpPageState extends State<TeacherSignUpPage> {
           ),
         );
 
-      if (phone.isNotEmpty) {
+      // Phone verification (via updateUser + OTP) requires an ACTIVE session.
+      // When email confirmation is enabled, signUp returns no session until the
+      // user confirms their email and signs in. Avoid triggering phone flow then.
+      final hasSession = Supabase.instance.client.auth.currentSession != null;
+      if (phone.isNotEmpty && hasSession) {
         await _startPhoneVerification(phone);
+      } else if (phone.isNotEmpty && !hasSession) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(
+            content: Text(
+              'Verify your email and sign in first, then you can verify your phone from your profile.'
+            ),
+          ));
       }
 
       setState(() => _created = true);
@@ -104,7 +147,13 @@ class _TeacherSignUpPageState extends State<TeacherSignUpPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('Phone verification failed: ${e.message}')));
+        ..showSnackBar(SnackBar(
+          content: Text(
+            e.message.contains('session')
+                ? 'Phone verification needs an active session. Please sign in and try again.'
+                : 'Phone verification failed: ${e.message}',
+          ),
+        ));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -382,6 +431,31 @@ class _TeacherSignUpPageState extends State<TeacherSignUpPage> {
                     visible: _created,
                     child: Column(
                       children: [
+                        const SizedBox(height: 8),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: _resendEmailVerification,
+                              icon: const Icon(Icons.mark_email_unread_outlined),
+                              label: const Text('Resend verification email'),
+                            ),
+                            if (_phoneController.text.trim().isNotEmpty) ...[
+                              OutlinedButton.icon(
+                                onPressed: () => _resendSmsOtp(_phoneController.text.trim()),
+                                icon: const Icon(Icons.sms_outlined),
+                                label: const Text('Resend SMS code'),
+                              ),
+                              TextButton.icon(
+                                onPressed: () => _promptOtpDialog(_phoneController.text.trim()),
+                                icon: const Icon(Icons.dialpad_outlined),
+                                label: const Text('Enter code'),
+                              ),
+                            ],
+                          ],
+                        ),
                         const SizedBox(height: 8),
                         OutlinedButton.icon(
                           onPressed: () {

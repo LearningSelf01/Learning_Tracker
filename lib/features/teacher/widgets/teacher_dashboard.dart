@@ -8,9 +8,9 @@ class TeacherDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final user = Supabase.instance.client.auth.currentUser;
-    final String name = ((user?.userMetadata?['full_name'] as String?) ?? '').trim();
-    final displayName = name.isEmpty ? 'Teacher' : name;
+    // Show a static Teacher name to avoid leaking student identity.
+    // TODO: Replace with teacher-specific client when multi-app auth is wired.
+    final displayName = 'Teacher';
 
     final bottomInset = MediaQuery.of(context).padding.bottom;
     return ListView(

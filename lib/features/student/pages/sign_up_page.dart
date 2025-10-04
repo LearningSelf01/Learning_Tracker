@@ -72,9 +72,16 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         );
 
-      // Trigger SMS OTP to verify the provided phone number, if any
-      if (phone.isNotEmpty) {
+      // Phone verification requires an ACTIVE session (not provided if email confirmation is pending)
+      final hasSession = Supabase.instance.client.auth.currentSession != null;
+      if (phone.isNotEmpty && hasSession) {
         await _startPhoneVerification(phone);
+      } else if (phone.isNotEmpty && !hasSession) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(
+            content: Text('Verify your email and sign in first, then verify your phone from your profile.'),
+          ));
       }
 
       setState(() {
@@ -120,9 +127,13 @@ class _SignUpPageState extends State<SignUpPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text('Phone verification failed: ${e.message}')),
-        );
+        ..showSnackBar(SnackBar(
+          content: Text(
+            e.message.contains('session')
+                ? 'Phone verification needs an active session. Please sign in and try again.'
+                : 'Phone verification failed: ${e.message}',
+          ),
+        ));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)

@@ -58,12 +58,7 @@ class TeacherDrawer extends StatelessWidget {
             _DrawerTile(
               icon: Icons.settings_rounded,
               label: 'Settings',
-              onTap: () {
-                // Placeholder: keep teacher namespace but no page yet
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Teacher settings coming soon')),
-                );
-              },
+              onTap: () => context.go(AppRoute.teacherSettings),
             ),
             _DrawerTile(
               icon: Icons.logout_rounded,

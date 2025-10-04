@@ -12,6 +12,9 @@ import '../pages/teacher_contacts_page.dart';
 import '../pages/teacher_tracker_page.dart';
 import '../pages/teacher_sign_in_page.dart';
 import '../pages/teacher_sign_up_page.dart';
+import '../pages/teacher_settings_page.dart';
+import '../pages/teacher_settings_profile_page.dart';
+import '../pages/teacher_settings_password_page.dart';
 
 RouteBase buildTeacherShell() {
   return ShellRoute(
@@ -30,21 +33,11 @@ final List<RouteBase> teacherRoutes = <RouteBase>[
     path: AppRoute.teacherSignIn,
     name: 'teacher-sign-in',
     pageBuilder: (context, state) => const NoTransitionPage(child: TeacherSignInPage()),
-    redirect: (context, state) {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) return AppRoute.teacher;
-      return null;
-    },
   ),
   GoRoute(
     path: AppRoute.teacherSignUp,
     name: 'teacher-sign-up',
     pageBuilder: (context, state) => const NoTransitionPage(child: TeacherSignUpPage()),
-    redirect: (context, state) {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) return AppRoute.teacher;
-      return null;
-    },
   ),
   GoRoute(
     path: AppRoute.teacherCourses,
@@ -75,5 +68,21 @@ final List<RouteBase> teacherRoutes = <RouteBase>[
     path: AppRoute.teacherRoomOverride,
     name: 'teacher-room-override',
     pageBuilder: (context, state) => const NoTransitionPage(child: TeacherRoomOverridePage()),
+  ),
+  // Settings and components (teacher only)
+  GoRoute(
+    path: AppRoute.teacherSettings,
+    name: 'teacher-settings',
+    pageBuilder: (context, state) => const NoTransitionPage(child: TeacherSettingsPage()),
+  ),
+  GoRoute(
+    path: AppRoute.teacherSettingsProfile,
+    name: 'teacher-settings-profile',
+    pageBuilder: (context, state) => const NoTransitionPage(child: TeacherSettingsProfilePage()),
+  ),
+  GoRoute(
+    path: AppRoute.teacherSettingsPassword,
+    name: 'teacher-settings-password',
+    pageBuilder: (context, state) => const NoTransitionPage(child: TeacherSettingsPasswordPage()),
   ),
 ];

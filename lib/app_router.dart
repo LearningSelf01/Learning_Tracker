@@ -32,6 +32,7 @@ class AppRoute {
   static const community = '/student/community';
   static const contacts = '/student/contacts';
   static const tracker = '/student/tracker';
+  static const attendance = '/student/attendance';
   static const routing = '/student/routing';
   static const signIn = '/student/sign-in';
   static const signUp = '/student/sign-up';
@@ -47,6 +48,9 @@ class AppRoute {
   static const teacherTracker = '/teacher/tracker';
   static const teacherSignIn = '/teacher/sign-in';
   static const teacherSignUp = '/teacher/sign-up';
+  static const teacherSettings = '/teacher/settings';
+  static const teacherSettingsProfile = '/teacher/settings/profile';
+  static const teacherSettingsPassword = '/teacher/settings/password';
 
   // Admin namespace
   static const adminRoot = '/admin';
@@ -58,6 +62,9 @@ class AppRoute {
   static const adminCommunity = '/admin/community';
   static const adminContacts = '/admin/contacts';
   static const adminTracker = '/admin/tracker';
+  static const adminSettings = '/admin/settings';
+  static const adminSettingsProfile = '/admin/settings/profile';
+  static const adminSettingsPassword = '/admin/settings/password';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {

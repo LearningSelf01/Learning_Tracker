@@ -55,64 +55,82 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     final currentIndex = _indexFromLocation(location);
+    final onAuthScreens =
+        location.startsWith(AppRoute.teacherSignIn) || location.startsWith(AppRoute.teacherSignUp);
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Teacher Dashboard'),
-        actions: [
-          // Notifications bell with a small badge
-          IconButton(
-            tooltip: 'Notifications',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications tapped')),
-              );
-            },
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.notifications_outlined),
-                Positioned(
-                  right: -1,
-                  top: -1,
-                  child: Container(
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
-                      shape: BoxShape.circle,
+      appBar: onAuthScreens
+          ? null
+          : AppBar(
+              title: const Text('Teacher Dashboard'),
+              actions: [
+                TextButton(
+                  onPressed: () => context.go(AppRoute.teacherSignUp),
+                  child: Text(
+                    'Sign Up',
+                    style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.go(AppRoute.teacherSignIn),
+                  child: Text(
+                    'Sign In',
+                    style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  ),
+                ),
+                // Notifications bell with a small badge
+                IconButton(
+                  tooltip: 'Notifications',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Notifications tapped')),
+                    );
+                  },
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.notifications_outlined),
+                      Positioned(
+                        right: -1,
+                        top: -1,
+                        child: Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.error,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => _bannerVisible = !_bannerVisible),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Tooltip(
+                      message: 'Profile',
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-          GestureDetector(
-            onTap: () => setState(() => _bannerVisible = !_bannerVisible),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Tooltip(
-                message: 'Profile',
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
       drawer: const TeacherDrawer(),
       body: SafeArea(
         child: Column(
           children: [
-            if (_bannerVisible)
+            if (_bannerVisible && !onAuthScreens)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                 child: Material(
@@ -120,7 +138,6 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     side: BorderSide(color: cs.outlineVariant),
-                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

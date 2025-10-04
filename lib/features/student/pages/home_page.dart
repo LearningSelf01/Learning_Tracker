@@ -62,6 +62,8 @@ class _HomeShellState extends State<HomeShell> {
   bool _bannerVisible = false;
   Future<String?>? _titleNameFuture;
   StreamSubscription<AuthState>? _authSub;
+  // For anchoring the popup menu to a stable overlay position
+  final GlobalKey _profileBtnKey = GlobalKey(debugLabel: 'profile_menu_btn');
 
   @override
   void initState() {
@@ -133,7 +135,8 @@ class _HomeShellState extends State<HomeShell> {
     final showBanner = _bannerVisible && !isAuthRoute && !isLoggedIn;
 
     return Scaffold(
-      appBar: (isAuthRoute || isSettingsRoute || isProfileRoute || isSubAppBarRoute)
+      // Hide AppBar on profile and settings pages per request
+      appBar: (isAuthRoute || isProfileRoute || isSettingsRoute || isSubAppBarRoute)
           ? null
           : AppBar(
         title: FutureBuilder<String?>(
@@ -173,49 +176,56 @@ class _HomeShellState extends State<HomeShell> {
               ],
             ),
           ),
-          // Profile avatar: if logged in show menu, else toggle sign-in banner
+          // Profile avatar: if logged in show popup (anchored to root overlay), else toggle sign-in banner
           if (isLoggedIn)
-            PopupMenuButton<int>(
-              tooltip: 'Profile',
-              offset: const Offset(0, 40),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: 1,
-                  child: ListTile(leading: Icon(Icons.person), title: Text('Profile')),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
-                ),
-                PopupMenuDivider(height: 8),
-                PopupMenuItem(
-                  value: 3,
-                  child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out')),
-                ),
-              ],
-              onSelected: (v) async {
-                if (v == 1) {
-                  context.push(AppRoute.userProfile);
-                } else if (v == 2) {
-                  context.push(AppRoute.settings);
-                } else if (v == 3) {
-                  // Sign out: Only navigate to default page. Do nothing else.
-                  if (mounted) context.go(AppRoute.landing);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            )
+            Builder(builder: (parentCtx) {
+              return IconButton(
+                key: _profileBtnKey,
+                tooltip: 'Profile',
+                onPressed: () async {
+                  // Calculate position of the icon button
+                  final RenderBox button = _profileBtnKey.currentContext!.findRenderObject() as RenderBox;
+                  final overlay = Navigator.of(parentCtx, rootNavigator: true).overlay!;
+                  final RenderBox overlayBox = overlay.context.findRenderObject() as RenderBox;
+                  final Offset offset = button.localToGlobal(Offset.zero, ancestor: overlayBox);
+                  final RelativeRect position = RelativeRect.fromLTRB(
+                    offset.dx,
+                    offset.dy + button.size.height,
+                    overlayBox.size.width - offset.dx - button.size.width,
+                    overlayBox.size.height - offset.dy,
+                  );
+
+                  final selected = await showMenu<int>(
+                    context: overlay.context,
+                    position: position,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    items: const [
+                      PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.person), title: Text('Profile'))),
+                      PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.settings), title: Text('Settings'))),
+                      PopupMenuDivider(height: 8),
+                      PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
+                    ],
+                  );
+
+                  if (!mounted || selected == null) return;
+                  // Defer navigation until popup is fully removed
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    if (!mounted) return;
+                    if (selected == 1) {
+                      parentCtx.push(AppRoute.userProfile);
+                    } else if (selected == 2) {
+                      parentCtx.push(AppRoute.settings);
+                    } else if (selected == 3) {
+                      try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
+                      StudentRepository().clearCache();
+                      await LastArea.setStudent();
+                      parentCtx.go(AppRoute.dashboard);
+                    }
+                  });
+                },
+                icon: const Icon(Icons.account_circle_outlined),
+              );
+            })
           else
             GestureDetector(
               onTap: () => setState(() => _bannerVisible = !_bannerVisible),
@@ -237,7 +247,7 @@ class _HomeShellState extends State<HomeShell> {
         
         ],
       ),
-      drawer: (isAuthRoute || isProfileRoute) ? null : const AppDrawer(),
+      drawer: (isAuthRoute || isProfileRoute || isSettingsRoute) ? null : const AppDrawer(),
       body: SafeArea(
         child: Column(
           children: [
@@ -303,7 +313,7 @@ class _HomeShellState extends State<HomeShell> {
           ],
         ),
       ),
-      bottomNavigationBar: (isAuthRoute || isProfileRoute)
+      bottomNavigationBar: (isAuthRoute || isProfileRoute || isSettingsRoute)
           ? null
           : NavigationBar(
               selectedIndex: currentIndex,

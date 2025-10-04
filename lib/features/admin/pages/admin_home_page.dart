@@ -98,15 +98,19 @@ class _AdminHomeShellState extends State<AdminHomeShell> {
               PopupMenuItem(value: 4, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
             ],
             onSelected: (v) async {
-              if (v == 1) {
-                context.push(AppRoute.adminUsers);
-              } else if (v == 2) {
-                context.push(AppRoute.adminRoutine);
-              } else if (v == 3) {
-                context.push(AppRoute.adminRoomOverride);
-              } else if (v == 4) {
-                if (context.mounted) context.go(AppRoute.landing);
-              }
+              // Defer to next frame so popup menu fully disposes before navigating
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!context.mounted) return;
+                if (v == 1) {
+                  context.push(AppRoute.adminUsers);
+                } else if (v == 2) {
+                  context.push(AppRoute.adminRoutine);
+                } else if (v == 3) {
+                  context.push(AppRoute.adminRoomOverride);
+                } else if (v == 4) {
+                  context.go(AppRoute.landing);
+                }
+              });
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),

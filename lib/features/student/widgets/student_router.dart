@@ -18,6 +18,7 @@ import '../pages/address_details_page.dart';
 import '../pages/community_page.dart';
 import '../pages/contacts_page.dart';
 import '../pages/tracker_page.dart';
+import '../pages/attendance_page.dart';
 import '../pages/routing_page.dart';
 import '../pages/sign_in_page.dart';
 import '../pages/sign_up_page.dart';
@@ -86,6 +87,11 @@ final List<RouteBase> studentRoutes = <RouteBase>[
     path: AppRoute.tracker,
     name: 'tracker',
     pageBuilder: (context, state) => const NoTransitionPage(child: TrackerPage()),
+  ),
+  GoRoute(
+    path: AppRoute.attendance,
+    name: 'attendance',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AttendancePage()),
   ),
   GoRoute(
     path: AppRoute.settings,

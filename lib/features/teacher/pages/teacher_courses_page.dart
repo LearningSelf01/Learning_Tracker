@@ -1,20 +1,75 @@
 import 'package:flutter/material.dart';
 
-class TeacherCoursesPage extends StatelessWidget {
+class TeacherCoursesPage extends StatefulWidget {
   const TeacherCoursesPage({super.key});
+
+  @override
+  State<TeacherCoursesPage> createState() => _TeacherCoursesPageState();
+}
+
+class _TeacherCoursesPageState extends State<TeacherCoursesPage> {
+  String _degreeType = 'UG';
+  String _degreeProgram = 'BSc';
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: const [
-        _Header(title: 'Courses', icon: Icons.menu_book),
-        SizedBox(height: 12),
-        _CourseCard(title: 'Mathematics', subtitle: 'Linear Algebra • MTH201', progress: 0.6),
-        _CourseCard(title: 'Physics', subtitle: 'Quantum Mechanics • PHY305', progress: 0.3),
-        _CourseCard(title: 'Computer Science', subtitle: 'Data Structures • CS210', progress: 0.8),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Pursuing Degree filters
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Text('Pursuing Degree', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _degreeType,
+                  isExpanded: true,
+                  decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                  items: const ['UG', 'PG', 'Both']
+                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _degreeType = v ?? _degreeType),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _degreeProgram,
+                  isExpanded: true,
+                  decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                  items: const ['BSc', 'BTech', 'MSc', 'MTech']
+                      .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _degreeProgram = v ?? _degreeProgram),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 0),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: 12,
+            separatorBuilder: (_, __) => const Divider(height: 0),
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: const CircleAvatar(child: Icon(Icons.menu_book)),
+                title: Text('Course #${index + 1}'),
+                subtitle: Text('$_degreeType · $_degreeProgram'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {},
+              );
+            },
+          ),
+        ),
       ],
     );
   }

@@ -11,8 +11,7 @@ class AdminDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Admin Dashboard', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
+          // Heading removed per request
           Wrap(
             spacing: 12,
             runSpacing: 12,

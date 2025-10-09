@@ -15,6 +15,7 @@ import '../pages/teacher_sign_up_page.dart';
 import '../pages/teacher_settings_page.dart';
 import '../pages/teacher_settings_profile_page.dart';
 import '../pages/teacher_settings_password_page.dart';
+import '../pages/teacher_calendar_page.dart';
 
 RouteBase buildTeacherShell() {
   return ShellRoute(
@@ -58,6 +59,11 @@ final List<RouteBase> teacherRoutes = <RouteBase>[
     path: AppRoute.teacherTracker,
     name: 'teacher-tracker',
     pageBuilder: (context, state) => const NoTransitionPage(child: TeacherTrackerPage()),
+  ),
+  GoRoute(
+    path: AppRoute.teacherCalendar,
+    name: 'teacher-calendar',
+    pageBuilder: (context, state) => const NoTransitionPage(child: TeacherCalendarPage()),
   ),
   GoRoute(
     path: AppRoute.teacherClasses,

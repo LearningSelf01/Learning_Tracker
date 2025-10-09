@@ -16,6 +16,25 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
+class _StudentCommunityChipButton extends StatelessWidget {
+  const _StudentCommunityChipButton({required this.label, this.onPressed});
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: const Icon(Icons.group_outlined, size: 18),
+      label: Text(label),
+      onPressed: onPressed ?? () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$label tapped')),
+        );
+      },
+    );
+  }
+}
+
 class _TopNavChip extends StatelessWidget {
   const _TopNavChip({required this.label, required this.icon, required this.route, required this.location});
   final String label;
@@ -120,34 +139,50 @@ class _HomeShellState extends State<HomeShell> {
     final isAuthRoute = location.startsWith(AppRoute.signIn) || location.startsWith(AppRoute.signUp);
     final isSettingsRoute = location.startsWith(AppRoute.settings);
     final isProfileRoute = location.startsWith(AppRoute.userProfile);
-    // Sub-pages that will provide their own AppBar (with back button)
-    final isSubAppBarRoute =
-        location.startsWith(AppRoute.courses) ||
-        location.startsWith(AppRoute.calendar) ||
-        location.startsWith(AppRoute.tasks) ||
-        location.startsWith(AppRoute.routing) ||
-        location.startsWith(AppRoute.tracker) ||
-        location.startsWith(AppRoute.cvMaker) ||
-        location.startsWith(AppRoute.skills);
     final user = Supabase.instance.client.auth.currentUser;
     final String? fullName = user?.userMetadata?['full_name'] as String?;
     final bool isLoggedIn = user != null;
     final showBanner = _bannerVisible && !isAuthRoute && !isLoggedIn;
 
     return Scaffold(
-      // Hide AppBar on profile and settings pages per request
-      appBar: (isAuthRoute || isProfileRoute || isSettingsRoute || isSubAppBarRoute)
+      // Match Teacher: show AppBar on bottom-tab pages; hide only on auth/profile/settings
+      appBar: (isAuthRoute || isProfileRoute || isSettingsRoute)
           ? null
           : AppBar(
-        title: FutureBuilder<String?>(
-          future: _titleNameFuture,
-          builder: (context, snap) {
-            final repoName = (snap.data ?? '').trim();
-            final metaName = (fullName ?? '').trim();
-            final name = repoName.isNotEmpty ? repoName : metaName;
-            return Text(name.isEmpty ? 'Learning Tracker' : name);
-          },
-        ),
+        title: () {
+          // Order matters: check specific subroutes first
+          if (location.startsWith(AppRoute.tracker)) return const Text('Goal Tracker');
+          if (location.startsWith(AppRoute.courses)) return const Text('Courses');
+          if (location.startsWith(AppRoute.community)) return const Text('Community');
+          if (location.startsWith(AppRoute.contacts)) return const Text('Contacts');
+          // Dashboard must be an exact match; '/student' prefixes every student route
+          if (location == AppRoute.dashboard) return const Text('Dashboard');
+          return const Text('Student');
+        }(),
+        bottom: location.startsWith(AppRoute.community)
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(56),
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: const [
+                        _StudentCommunityChipButton(label: 'My Departments'),
+                        SizedBox(width: 8),
+                        _StudentCommunityChipButton(label: 'Colleagues'),
+                        SizedBox(width: 8),
+                        _StudentCommunityChipButton(label: 'Mentors'),
+                        SizedBox(width: 8),
+                        _StudentCommunityChipButton(label: 'Resource Rooms'),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            : null,
         actions: [
           // Notifications bell with a small badge
           IconButton(
@@ -176,75 +211,49 @@ class _HomeShellState extends State<HomeShell> {
               ],
             ),
           ),
-          // Profile avatar: if logged in show popup (anchored to root overlay), else toggle sign-in banner
           if (isLoggedIn)
-            Builder(builder: (parentCtx) {
-              return IconButton(
-                key: _profileBtnKey,
-                tooltip: 'Profile',
-                onPressed: () async {
-                  // Calculate position of the icon button
-                  final RenderBox button = _profileBtnKey.currentContext!.findRenderObject() as RenderBox;
-                  final overlay = Navigator.of(parentCtx, rootNavigator: true).overlay!;
-                  final RenderBox overlayBox = overlay.context.findRenderObject() as RenderBox;
-                  final Offset offset = button.localToGlobal(Offset.zero, ancestor: overlayBox);
-                  final RelativeRect position = RelativeRect.fromLTRB(
-                    offset.dx,
-                    offset.dy + button.size.height,
-                    overlayBox.size.width - offset.dx - button.size.width,
-                    overlayBox.size.height - offset.dy,
-                  );
-
-                  final selected = await showMenu<int>(
-                    context: overlay.context,
-                    position: position,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    items: const [
-                      PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.person), title: Text('Profile'))),
-                      PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.settings), title: Text('Settings'))),
-                      PopupMenuDivider(height: 8),
-                      PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
-                    ],
-                  );
-
-                  if (!mounted || selected == null) return;
-                  // Defer navigation until popup is fully removed
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    if (!mounted) return;
-                    if (selected == 1) {
-                      parentCtx.push(AppRoute.userProfile);
-                    } else if (selected == 2) {
-                      parentCtx.push(AppRoute.settings);
-                    } else if (selected == 3) {
-                      try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
-                      StudentRepository().clearCache();
-                      await LastArea.clear();
-                      // Do not navigate here; auth change will trigger router redirect to landing.
-                    }
-                  });
-                },
-                icon: const Icon(Icons.account_circle_outlined),
-              );
-            })
-          else
-            GestureDetector(
-              onTap: () => setState(() => _bannerVisible = !_bannerVisible),
+            PopupMenuButton<int>(
+              tooltip: 'Profile',
+              offset: const Offset(0, 40),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.person), title: Text('Profile'))),
+                PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.settings), title: Text('Settings'))),
+                PopupMenuDivider(height: 8),
+                PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
+              ],
+              onSelected: (v) async {
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  if (!context.mounted) return;
+                  if (v == 1) {
+                    context.push(AppRoute.userProfile);
+                  } else if (v == 2) {
+                    context.push(AppRoute.settings);
+                  } else if (v == 3) {
+                    try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
+                    StudentRepository().clearCache();
+                    await LastArea.clear();
+                  }
+                });
+              },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Tooltip(
-                  message: 'Profile',
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
+            )
+          else
+            IconButton(
+              tooltip: 'Sign in',
+              onPressed: () => context.push(AppRoute.signIn),
+              icon: const Icon(Icons.account_circle_outlined),
             ),
-        
         ],
       ),
       drawer: (isAuthRoute || isProfileRoute || isSettingsRoute) ? null : const AppDrawer(),

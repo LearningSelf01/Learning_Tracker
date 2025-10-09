@@ -9,26 +9,7 @@ class TeacherContactsPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Row(
-          children: [
-            Icon(Icons.people_alt, color: cs.primary),
-            const SizedBox(width: 8),
-            Text('Contacts', style: Theme.of(context).textTheme.headlineSmall),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: ListTile(
-            leading: CircleAvatar(backgroundColor: cs.primaryContainer, child: Icon(Icons.person, color: cs.onPrimaryContainer)),
-            title: const Text('Invite colleagues'),
-            subtitle: const Text('Send an invite to collaborate on classes and resources'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invite colleagues tapped')));
-            },
-          ),
-        ),
-        const SizedBox(height: 8),
+        // Removed in-body 'Contacts' header (AppBar already provides title)
         Card(
           child: Column(
             children: const [

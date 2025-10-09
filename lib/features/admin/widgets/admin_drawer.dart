@@ -38,12 +38,43 @@ class AdminDrawer extends StatelessWidget {
               ),
             ),
             const Divider(height: 0),
-            _Tile(icon: Icons.dashboard_customize_rounded, label: 'Dashboard', onTap: () => context.go(AppRoute.admin)),
+            // Primary admin actions in requested order
+            _Tile(icon: Icons.dashboard, label: 'Dashboard', onTap: () => context.go(AppRoute.admin)),
+            _Tile(
+              icon: Icons.calendar_month,
+              label: 'Calendar',
+              onTap: () => context.go(AppRoute.adminCalendar),
+            ),
+            _Tile(
+              icon: Icons.person_add,
+              label: 'Student Admission',
+              onTap: () => context.go(AppRoute.adminStudentAdmission),
+            ),
+            _Tile(
+              icon: Icons.edit,
+              label: 'Student Updation',
+              onTap: () => context.go(AppRoute.adminStudentUpdation),
+            ),
+            _Tile(
+              icon: Icons.school,
+              label: 'Teacher Joining',
+              onTap: () => context.go(AppRoute.adminTeacherJoining),
+            ),
+            _Tile(
+              icon: Icons.manage_accounts,
+              label: 'Teacher Updation',
+              onTap: () => context.go(AppRoute.adminTeacherUpdation),
+            ),
+            const Divider(height: 0),
             _Tile(icon: Icons.group, label: 'Users', onTap: () => context.go(AppRoute.adminUsers)),
-            _Tile(icon: Icons.table_view_outlined, label: 'Routine Setup', onTap: () => context.go(AppRoute.adminRoutine)),
-            _Tile(icon: Icons.meeting_room_outlined, label: 'Room Override', onTap: () => context.go(AppRoute.adminRoomOverride)),
+            _Tile(icon: Icons.table_view_outlined, label: 'Routine', onTap: () => context.go(AppRoute.adminRoutine)),
             const Spacer(),
             const Divider(height: 0),
+            _Tile(
+              icon: Icons.settings,
+              label: 'Settings',
+              onTap: () => context.go(AppRoute.adminSettings),
+            ),
             _Tile(
               icon: Icons.logout_rounded,
               label: 'Sign out',

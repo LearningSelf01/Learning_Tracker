@@ -14,6 +14,25 @@ class TeacherHomeShell extends StatefulWidget {
   State<TeacherHomeShell> createState() => _TeacherHomeShellState();
 }
 
+class _CommunityChipButton extends StatelessWidget {
+  const _CommunityChipButton({required this.label, this.onPressed});
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: const Icon(Icons.group_outlined, size: 18),
+      label: Text(label),
+      onPressed: onPressed ?? () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$label tapped')),
+        );
+      },
+    );
+  }
+}
+
 class _TeacherHomeShellState extends State<TeacherHomeShell> {
   // Hidden by default; shown when user taps the profile button
   bool _bannerVisible = false;
@@ -58,33 +77,51 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
     final currentIndex = _indexFromLocation(location);
     final onAuthScreens =
         location.startsWith(AppRoute.teacherSignIn) || location.startsWith(AppRoute.teacherSignUp);
+    final inTeacherSettings = location.startsWith(AppRoute.teacherSettings);
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final user = Supabase.instance.client.auth.currentUser;
     final bool isLoggedIn = user != null;
 
     return Scaffold(
-      appBar: onAuthScreens
+      appBar: (onAuthScreens || inTeacherSettings)
           ? null
           : AppBar(
-              title: const Text('Teacher Dashboard'),
+              title: () {
+                if (location.startsWith(AppRoute.teacherClasses)) return const Text('Classes');
+                if (location.startsWith(AppRoute.teacherRoomOverride)) return const Text('Room Override');
+                if (location.startsWith(AppRoute.teacherCourses)) return const Text('Courses');
+                if (location.startsWith(AppRoute.teacherCommunity)) return const Text('Community');
+                if (location.startsWith(AppRoute.teacherContacts)) return const Text('Contacts');
+                if (location.startsWith(AppRoute.teacherTracker)) return const Text('Tracker');
+                if (location.startsWith(AppRoute.teacherSettings)) return const Text('Settings');
+                return const Text('Teacher');
+              }(),
+              bottom: location.startsWith(AppRoute.teacherCommunity)
+                  ? PreferredSize(
+                      preferredSize: const Size.fromHeight(56),
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              _CommunityChipButton(label: 'My Departments'),
+                              const SizedBox(width: 8),
+                              _CommunityChipButton(label: 'Colleagues'),
+                              const SizedBox(width: 8),
+                              _CommunityChipButton(label: 'Mentors'),
+                              const SizedBox(width: 8),
+                              _CommunityChipButton(label: 'Resource Rooms'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : null,
               actions: [
-                if (!isLoggedIn) ...[
-                  TextButton(
-                    onPressed: () => context.go(AppRoute.teacherSignUp),
-                    child: Text(
-                      'Sign Up',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go(AppRoute.teacherSignIn),
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-                    ),
-                  ),
-                ],
                 // Notifications bell with a small badge
                 IconButton(
                   tooltip: 'Notifications',
@@ -114,62 +151,62 @@ class _TeacherHomeShellState extends State<TeacherHomeShell> {
                 ),
                 if (isLoggedIn)
                   PopupMenuButton<int>(
-                    tooltip: 'Profile',
-                    offset: const Offset(0, 40),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    itemBuilder: (context) => const [
+                  tooltip: 'Profile',
+                  offset: const Offset(0, 40),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  itemBuilder: (context) {
+                    if (!isLoggedIn) {
+                      return const [
+                        PopupMenuItem(value: 10, child: ListTile(leading: Icon(Icons.login), title: Text('Sign in'))),
+                        PopupMenuItem(value: 11, child: ListTile(leading: Icon(Icons.person_add_alt), title: Text('Sign up'))),
+                      ];
+                    }
+                    return const [
                       PopupMenuItem(value: 1, child: ListTile(leading: Icon(Icons.person), title: Text('Profile'))),
                       PopupMenuItem(value: 2, child: ListTile(leading: Icon(Icons.settings), title: Text('Settings'))),
                       PopupMenuDivider(height: 8),
                       PopupMenuItem(value: 3, child: ListTile(leading: Icon(Icons.logout), title: Text('Sign out'))),
-                    ],
-                    onSelected: (v) async {
-                      WidgetsBinding.instance.addPostFrameCallback((_) async {
-                        if (!context.mounted) return;
-                        if (v == 1) {
-                          context.push(AppRoute.teacherSettingsProfile);
-                        } else if (v == 2) {
-                          context.push(AppRoute.teacherSettings);
-                        } else if (v == 3) {
-                          try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
-                          await LastArea.clear();
-                          // Don't navigate here; auth change will trigger router redirect.
-                        }
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: CircleAvatar(
-                        radius: 16,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: () => setState(() => _bannerVisible = !_bannerVisible),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Tooltip(
-                        message: 'Profile',
-                        child: CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
+                    ];
+                  },
+                  onSelected: (v) async {
+                    WidgetsBinding.instance.addPostFrameCallback((_) async {
+                      if (!context.mounted) return;
+                      if (v == 10) {
+                        context.push(AppRoute.teacherSignIn);
+                      } else if (v == 11) {
+                        context.push(AppRoute.teacherSignUp);
+                      } else if (v == 1) {
+                        context.push(AppRoute.teacherSettingsProfile);
+                      } else if (v == 2) {
+                        context.push(AppRoute.teacherSettings);
+                      } else if (v == 3) {
+                        try { await Supabase.instance.client.auth.signOut(); } catch (_) {}
+                        await LastArea.clear();
+                        // Router will handle redirect on auth change
+                      }
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),
+                )
+                else
+                  IconButton(
+                    tooltip: 'Sign in',
+                    onPressed: () => context.push(AppRoute.teacherSignIn),
+                    icon: const Icon(Icons.account_circle_outlined),
+                  ),
               ],
             ),
-      drawer: const TeacherDrawer(),
+      drawer: (onAuthScreens || inTeacherSettings) ? null : const TeacherDrawer(),
       body: SafeArea(
         child: Column(
           children: [

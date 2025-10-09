@@ -44,6 +44,11 @@ class TeacherDrawer extends StatelessWidget {
               onTap: () => context.go(AppRoute.teacher),
             ),
             _DrawerTile(
+              icon: Icons.calendar_month,
+              label: 'Calendar',
+              onTap: () => context.go(AppRoute.teacherCalendar),
+            ),
+            _DrawerTile(
               icon: Icons.class_outlined,
               label: 'Classes',
               onTap: () => context.go(AppRoute.teacherClasses),

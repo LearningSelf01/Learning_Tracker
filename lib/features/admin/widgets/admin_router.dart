@@ -5,13 +5,20 @@ import '../pages/admin_home_page.dart';
 import 'admin_dashboard.dart';
 import '../pages/admin_users_page.dart';
 import '../pages/admin_routine_setup_page.dart';
-import '../pages/admin_room_override_page.dart';
 import '../pages/admin_courses_page.dart';
 import '../pages/admin_community_page.dart';
 import '../pages/admin_contacts_page.dart';
 import '../pages/admin_tracker_page.dart';
 import '../pages/admin_sign_in_page.dart';
 import '../pages/admin_sign_up_page.dart';
+import '../pages/admin_student_admission_page.dart';
+import '../pages/admin_student_updation_page.dart';
+import '../pages/admin_teacher_joining_page.dart';
+import '../pages/admin_teacher_updation_page.dart';
+import '../pages/admin_settings_page.dart';
+import '../pages/admin_settings_profile_page.dart';
+import '../pages/admin_settings_password_page.dart';
+import '../pages/admin_calendar_page.dart';
 
 RouteBase buildAdminShell() {
   return ShellRoute(
@@ -57,6 +64,26 @@ final List<RouteBase> adminRoutes = <RouteBase>[
     pageBuilder: (context, state) => const NoTransitionPage(child: AdminTrackerPage()),
   ),
   GoRoute(
+    path: AppRoute.adminCalendar,
+    name: 'admin-calendar',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminCalendarPage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminSettings,
+    name: 'admin-settings',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminSettingsPage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminSettingsProfile,
+    name: 'admin-settings-profile',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminSettingsProfilePage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminSettingsPassword,
+    name: 'admin-settings-password',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminSettingsPasswordPage()),
+  ),
+  GoRoute(
     path: AppRoute.adminUsers,
     name: 'admin-users',
     pageBuilder: (context, state) => const NoTransitionPage(child: AdminUsersPage()),
@@ -67,8 +94,29 @@ final List<RouteBase> adminRoutes = <RouteBase>[
     pageBuilder: (context, state) => const NoTransitionPage(child: AdminRoutineSetupPage()),
   ),
   GoRoute(
+    path: AppRoute.adminStudentAdmission,
+    name: 'admin-student-admission',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminStudentAdmissionPage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminStudentUpdation,
+    name: 'admin-student-updation',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminStudentUpdationPage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminTeacherJoining,
+    name: 'admin-teacher-joining',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminTeacherJoiningPage()),
+  ),
+  GoRoute(
+    path: AppRoute.adminTeacherUpdation,
+    name: 'admin-teacher-updation',
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminTeacherUpdationPage()),
+  ),
+  // Backward compatibility: direct the old Room Override path to Routine page
+  GoRoute(
     path: AppRoute.adminRoomOverride,
     name: 'admin-room-override',
-    pageBuilder: (context, state) => const NoTransitionPage(child: AdminRoomOverridePage()),
+    pageBuilder: (context, state) => const NoTransitionPage(child: AdminRoutineSetupPage()),
   ),
 ];

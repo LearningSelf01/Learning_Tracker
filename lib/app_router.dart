@@ -46,6 +46,7 @@ class AppRoute {
   static const teacherCommunity = '/teacher/community';
   static const teacherContacts = '/teacher/contacts';
   static const teacherTracker = '/teacher/tracker';
+  static const teacherCalendar = '/teacher/calendar';
   static const teacherSignIn = '/teacher/sign-in';
   static const teacherSignUp = '/teacher/sign-up';
   static const teacherSettings = '/teacher/settings';
@@ -64,9 +65,15 @@ class AppRoute {
   static const adminCommunity = '/admin/community';
   static const adminContacts = '/admin/contacts';
   static const adminTracker = '/admin/tracker';
+  static const adminCalendar = '/admin/calendar';
   static const adminSettings = '/admin/settings';
   static const adminSettingsProfile = '/admin/settings/profile';
   static const adminSettingsPassword = '/admin/settings/password';
+  // New admin pages
+  static const adminStudentAdmission = '/admin/student-admission';
+  static const adminStudentUpdation = '/admin/student-updation';
+  static const adminTeacherJoining = '/admin/teacher-joining';
+  static const adminTeacherUpdation = '/admin/teacher-updation';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -109,6 +116,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return isPublic ? null : AppRoute.landing;
       }
 
+      // Fast path: if already within a known namespace, skip role lookup
+      final isInStudent = path.startsWith(AppRoute.studentRoot);
+      final isInTeacher = path.startsWith(AppRoute.teacher);
+      final isInAdmin = path.startsWith(AppRoute.adminRoot) || path.startsWith(AppRoute.admin);
+      if (isInStudent || isInTeacher || isInAdmin) {
+        return null;
+      }
+
       // Signed in: look up role and send to proper area root if needed
       try {
         final data = await client
@@ -128,21 +143,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           await LastArea.setStudent();
         }
 
-        // If already under correct namespace, do nothing
-        final isInStudent = path.startsWith(AppRoute.studentRoot);
-        final isInTeacher = path.startsWith(AppRoute.teacher);
-        final isInAdmin = path.startsWith(AppRoute.adminRoot) || path.startsWith(AppRoute.admin);
-
-        if (role == 'teacher' && !isInTeacher) return AppRoute.teacher;
-        if (role == 'admin' && !isInAdmin) return AppRoute.admin;
-        if (role == 'student' && !isInStudent) return AppRoute.dashboard;
+        // If already under correct namespace, do nothing (handled above). Otherwise route to root.
+        if (role == 'teacher') return AppRoute.teacher;
+        if (role == 'admin') return AppRoute.admin;
+        if (role == 'student') return AppRoute.dashboard;
 
         return null;
       } catch (_) {
         // On failure to read profile, default to student area
         await LastArea.setStudent();
-        final isInStudent = path.startsWith(AppRoute.studentRoot);
-        return isInStudent ? null : AppRoute.dashboard;
+        return AppRoute.dashboard;
       }
     },
     routes: [
